@@ -21,14 +21,14 @@ export default {
                     <span class="material-symbols-outlined">deployed_code</span>
                     <span v-if="order.totalItems==0" class="text-danger fst-italic">&lt;not items&gt;</span>
                     <span v-else>{{ order.totalItems }} item{{order.totalItems>1?'s':''}}</span> 
-                    <span>- €{{ order.totalPrice }}</span>
+                    <span>- {{ $formatCurrency(order.totalPrice) }}</span>
                     <span v-if="!order.paid" class="text-danger fst-italic">&lt;not paid&gt;</span>
                     <span v-else class="text-success fst-italic">paid</span>
                 </div>
                 <div class="d-flex gap-1 align-items-center">
                         <span class="material-symbols-outlined ">call</span>
                         <span v-if="order.customerPhone==null" class="text-danger fst-italic pe-1">&lt;not phone contact&gt;</span>
-                        <span v-else>{{order.customerPhone}}</span>
+                        <span v-else>{{ $formatPhoneNumber(order.customerPhone) }}</span>
                 </div>
             </div>
             
