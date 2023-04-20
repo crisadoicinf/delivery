@@ -7,10 +7,7 @@ export default {
   components: {PromptModal, ConfirmModal},
   data() {
     return {
-      riders: [
-        {id: 1, name: "Cristian"},
-        {id: 2, name: "Michi"}
-      ],
+      riders: [],
       saving: false,
       deliveryDatePicker: null,
       deliveryDateFromPicker: null,
@@ -79,10 +76,13 @@ export default {
             }
           })
       })
+    const ridersRequest = axios.get('/api/delivery/riders')
+      .then(response => this.riders = response.data)
     if (this.orderId !== undefined) {
       axios.all([
         axios.get('/api/orders/' + this.orderId).then(response => response.data),
-        productsRequest
+        productsRequest,
+        ridersRequest
       ]).then(([order]) => this.setOrder(order))
     }
   },

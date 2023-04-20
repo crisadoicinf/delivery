@@ -6,7 +6,6 @@ import java.time.ZonedDateTime;
 
 @Getter
 @Setter
-@ToString
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
