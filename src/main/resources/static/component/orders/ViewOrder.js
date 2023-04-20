@@ -112,10 +112,10 @@ export default {
         })
     },
     saveOrder() {
-      this.saving = true
       this.$el.querySelectorAll(":invalid").forEach(el => el.classList.add("is-invalid"))
       const form = this.$refs.formOrder
       if (!form.checkValidity()) return;
+      this.saving = true
       const order = Object.assign({}, this.order)
       order.items = order.items
         .filter(item => item.quantity > 0)
