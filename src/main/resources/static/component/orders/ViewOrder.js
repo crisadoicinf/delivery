@@ -2,6 +2,8 @@ import axios from 'axios';
 import PromptModal from "../PromptModal.js";
 import ConfirmModal from "../ConfirmModal.js";
 import DatesUtil from "../../plugin/DatesUtil.js";
+import {formatPhoneNumber} from "../../plugin/FormatterPlugin.js";
+
 
 export default {
   components: {PromptModal, ConfirmModal},
@@ -26,6 +28,15 @@ export default {
     }
   },
   computed: {
+	fCustomerPhone:{
+		get(){
+			const value = this.order.customerPhone;
+			return value ? formatPhoneNumber(value) : value
+		},
+		set(value){
+			this.order.customerPhone='+'+formatPhoneNumber(value).replace(/\D/g, '')
+		}
+	},
     orderId() {
       return this.$route.params.orderId;
     },
@@ -167,21 +178,35 @@ export default {
   },
   template: `
 <div>
-    <div class="sticky-top bg-dark text-white">
+    <div class="sticky-top">
         <div class="d-flex justify-content-between">
             <div>
                 <button type="button" class="btn p-2">
                     <div v-on:click="$router.back()" class="list-group-item list-group-item-action">
-                        <span class="material-symbols-outlined text-white">chevron_left</span>
+                        <span class="material-symbols-outlined">chevron_left</span>
                     </div>
                 </button>
             </div>
             <div class="text-center my-2 flex-fill">
                 Order #1
             </div>
-            <button @click="deleteOrder" :style="{visibility:orderId===undefined?'hidden':'visible'}" type="button" class="btn p-2">
-                <span class="material-symbols-outlined text-white">delete</span>
-            </button>
+            <div class="dropdown">
+			  <button class="btn" type="button" data-bs-toggle="dropdown">
+			  	<span class="material-symbols-outlined">more_vert</span>
+			  </button>
+			  <ul class="dropdown-menu dropdown-menu-end">
+			    <li>
+			   		<a :class="{disabled:order.customerPhone === null}" :href="'tel:'+order.customerPhone" class="dropdown-item" type="button">
+                        <span class="material-symbols-outlined">call</span> Call customer
+			    	</a>
+			    </li>
+			    <li v-if="orderId!==undefined">
+			   		<button @click="deleteOrder" class="dropdown-item" type="button">
+			    		<span class="material-symbols-outlined">delete</span> Delete order
+			    	</button>
+			    </li>
+			  </ul>
+			</div>
         </div>
     </div>
 
@@ -191,7 +216,8 @@ export default {
             <input v-model="order.customerName" type="text" required class="form-control" id="customerName">
 
             <label for="customerPhone" class="form-label">Phone</label>
-            <input v-model="order.customerPhone" type="tel" class="form-control" id="customerPhone">
+            <input v-model="fCustomerPhone" @input="$handleCursorInput" type="tel" class="form-control" id="customerPhone" 
+            	pattern="\\+\\d{1,3}\\s\\d{1,3}\\s\\d+">
 
             <label class="form-label">Menu</label>
             <div class="list-group">
