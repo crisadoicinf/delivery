@@ -5,7 +5,12 @@ import ListOrdersComponent from "./ListOrdersComponent.js";
 export default {
   components: {ListOrdersComponent},
   data() {
-    return {orders: []}
+	const [from, to] = DatesUtil.getCurrentRangeWeek()
+    return {
+		from:new Date(this.$route.query.from || from.toISOString()),
+		to:new Date(this.$route.query.to || to.toISOString()),
+		orders: []
+	}
   },
   mounted() {
     const cmp = this;
@@ -14,16 +19,20 @@ export default {
       altFormat: "D d of M",
       mode: "range",
       dateFormat: "Z",
+      defaultDate:[this.from,this.to],
       onChange: function (selectedDates) {
         if (selectedDates.length === 2) {
           cmp.loadOrders(selectedDates[0], selectedDates[1])
         }
       }
     })
-      .setDate(DatesUtil.getCurrentRangeWeek(), true);
+    this.loadOrders(this.from,this.to)
   },
   methods: {
-    loadOrders(dateFrom, dateTo) {
+	loadOrders(dateFrom, dateTo) {
+	  this.$router.replace({
+		  query: {from: dateFrom.toISOString(), to: dateTo.toISOString()}
+	  })
       axios
         .get('/api/orders', {params: {from: dateFrom, to: dateTo}})
         .then(response => {

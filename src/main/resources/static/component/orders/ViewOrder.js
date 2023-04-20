@@ -167,9 +167,9 @@ export default {
         <div class="d-flex justify-content-between">
             <div>
                 <button type="button" class="btn p-2">
-                    <router-link class="list-group-item list-group-item-action" to="/receive/orders">
+                    <div v-on:click="$router.back()" class="list-group-item list-group-item-action">
                         <span class="material-symbols-outlined text-white">chevron_left</span>
-                    </router-link>
+                    </div>
                 </button>
             </div>
             <div class="text-center my-2 flex-fill">
