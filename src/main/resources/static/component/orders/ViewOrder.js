@@ -28,7 +28,14 @@ export default {
     }
   },
   computed: {
-	fCustomerPhone:{
+    orderId() {
+      return this.$route.params.orderId;
+    },
+    computedTotalPrice() {
+      const totalItems = this.order.items.reduce((acc, item) => acc + item.productPrice * item.quantity, 0)
+      return Math.max(0, totalItems + this.order.deliveryPrice - this.order.discount)
+    },
+	customerPhone:{
 		get(){
 			const value = this.order.customerPhone;
 			return value ? formatPhoneNumber(value) : value
@@ -37,13 +44,22 @@ export default {
 			this.order.customerPhone='+'+formatPhoneNumber(value).replace(/\D/g, '')
 		}
 	},
-    orderId() {
-      return this.$route.params.orderId;
-    },
-    computedTotalPrice() {
-      const totalItems = this.order.items.reduce((acc, item) => acc + item.productPrice * item.quantity, 0)
-      return Math.max(0, totalItems + this.order.deliveryPrice - this.order.discount)
-    }
+	whatsappLink(){
+		const customerPhone = this.order.customerPhone
+		if (customerPhone === null) return ''
+		return 'https://api.whatsapp.com/send/?phone=' + customerPhone.replace('+','')
+	},
+	telephoneLink(){
+		const customerPhone = this.order.customerPhone
+		if (customerPhone === null) return ''
+		return 'tel:' + customerPhone
+	},
+	googleMapSearch(){
+		const deliveryAddress = this.order.deliveryAddress
+		if (deliveryAddress === null) return ''
+		return 'https://www.google.com/maps/search/' + encodeURIComponent(deliveryAddress)
+		
+	}
   },
   mounted() {
     this.deliveryDatePicker = flatpickr(this.$refs.deliveryDatePicker, {
@@ -196,8 +212,18 @@ export default {
 			  </button>
 			  <ul class="dropdown-menu dropdown-menu-end">
 			    <li>
-			   		<a :class="{disabled:order.customerPhone === null}" :href="'tel:'+order.customerPhone" class="dropdown-item" type="button">
+			   		<a :class="{disabled:order.customerPhone === null}" class="dropdown-item" :href="whatsappLink" target="__blank">
+                        <span class="material-symbols-outlined">chat</span> WhatsApp customer
+			    	</a>
+			    </li>
+			    <li>
+			   		<a :class="{disabled:order.customerPhone === null}" class="dropdown-item" :href="telephoneLink">
                         <span class="material-symbols-outlined">call</span> Call customer
+			    	</a>
+			    </li>
+			    <li>
+			   		<a :class="{disabled:order.deliveryAddress === null}" class="dropdown-item" :href="googleMapSearch" target="__blank">
+                        <span class="material-symbols-outlined">pin_drop</span> Google Map
 			    	</a>
 			    </li>
 			    <li v-if="orderId!==undefined">
@@ -216,7 +242,7 @@ export default {
             <input v-model="order.customerName" type="text" required class="form-control" id="customerName">
 
             <label for="customerPhone" class="form-label">Phone</label>
-            <input v-model="fCustomerPhone" @input="$handleCursorInput" type="tel" class="form-control" id="customerPhone" 
+            <input v-model="customerPhone" @input="$handleCursorInput" type="tel" class="form-control" id="customerPhone" 
             	pattern="\\+\\d{1,3}\\s\\d{1,3}\\s\\d+">
 
             <label class="form-label">Menu</label>
