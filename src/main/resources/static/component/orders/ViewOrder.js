@@ -1,6 +1,7 @@
 import axios from 'axios';
 import PromptModal from "../PromptModal.js";
 import ConfirmModal from "../ConfirmModal.js";
+import DatesUtil from "../../plugin/DatesUtil.js";
 
 export default {
   components: {PromptModal, ConfirmModal},
@@ -18,9 +19,10 @@ export default {
         customerName: null,
         customerPhone: null,
         note: null,
+        deliveryDate: DatesUtil.getCurrentDeliveryDate().toISOString(),
         deliveryAddress: null,
         deliveryRiderId: null,
-        deliveryPrice: 1.5,
+        deliveryPrice: 0,
         discount: 0,
         items: []
       }
@@ -40,7 +42,8 @@ export default {
       altInput: true,
       altFormat: "D d of M, Y",
       dateFormat: "Z",
-      allowInput: true
+      allowInput: true,
+      defaultDate: this.order.deliveryDate,
     });
     this.deliveryDateFromPicker = flatpickr(this.$refs.deliveryDateFromPicker, {
       altInput: true,
@@ -49,7 +52,8 @@ export default {
       time_24hr: true,
       altFormat: "H:i",
       dateFormat: "Z",
-      allowInput: true
+      allowInput: true,
+      defaultDate: this.order.deliveryDate,
     });
     this.deliveryDateToPicker = flatpickr(this.$refs.deliveryDateToPicker, {
       altInput: true,
