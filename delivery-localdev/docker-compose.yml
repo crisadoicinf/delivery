@@ -1,0 +1,12 @@
+version: '3.7'
+
+services:
+  postgres:
+    image: postgres:13.5-alpine
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_DB: delivery
+      POSTGRES_USER: crisado
+      POSTGRES_PASSWORD: crisado
