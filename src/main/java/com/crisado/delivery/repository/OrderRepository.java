@@ -4,6 +4,7 @@ import com.crisado.delivery.model.Order;
 import com.crisado.delivery.model.OrdersCountByDay;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.ZonedDateTime;
@@ -13,6 +14,17 @@ import java.util.List;
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
     List<Order> findAllByDeliveryDateBetween(ZonedDateTime from, ZonedDateTime to);
+    
+
+    @Query(value = """
+             select o, d, r
+             from Order as o
+             join o.delivery d
+             left join d.rider r
+             where date(o.delivery.date) = date(:date)
+             and (o.delivery.rider.id is null or o.delivery.rider.id = :riderId)
+            """)
+    List<Order> findAllByDeliveryDateAndRiderId(@Param("date") ZonedDateTime date, @Param("riderId") int riderId);
 
     @Query(value = """
              select new com.crisado.delivery.model.OrdersCountByDay(day(o.delivery.date), count(o.id))

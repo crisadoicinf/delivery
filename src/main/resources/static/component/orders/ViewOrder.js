@@ -18,6 +18,7 @@ export default {
         customerName: null,
         customerPhone: null,
         note: null,
+        delivered: false,
         deliveryDate: DatesUtil.getCurrentDeliveryDate().toISOString(),
         deliveryAddress: null,
         deliveryRiderId: null,
@@ -190,7 +191,11 @@ export default {
         .then(() => this.$router.push({path: '/receive/orders', replace: true}))
         .catch(() => {
         })
-    }
+    },
+    markAsDelivered(){
+		axios.put("/api/delivery/orders/" + this.orderId + "?delivered=true")
+			.then(() => this.order.delivered = true)
+	}
   },
   template: `
 <div>
@@ -225,6 +230,11 @@ export default {
 			   		<a :class="{disabled:order.deliveryAddress === null}" class="dropdown-item" :href="googleMapSearch" target="__blank">
                         <span class="material-symbols-outlined">pin_drop</span> Google Map
 			    	</a>
+			    </li>
+			    <li>
+			   		<button @click="markAsDelivered" :disabled="order.delivered" class="dropdown-item" type="button">
+			    		<span class="material-symbols-outlined">deployed_code</span> <span v-if="!order.delivered">Mark as delivered</span><span v-else>Delivered</span>
+			    	</button>
 			    </li>
 			    <li v-if="orderId!==undefined">
 			   		<button @click="deleteOrder" class="dropdown-item" type="button">

@@ -4,28 +4,44 @@ import ListOrdersComponent from "../orders/ListOrdersComponent.js";
 export default {
   components: {ListOrdersComponent},
   data() {
-    return {orders: []}
+	const today = new Date()
+	today.setHours(0,0,0,0)  
+    return {
+		date: new Date(this.$route.query.date || today.toISOString()),
+		rider: this.$route.query.rider,
+      	riders: [],
+		orders: []
+	}
   },
   mounted() {
-    const cmp = this;
     flatpickr(this.$refs.selectDate, {
       altInput: true,
       altFormat: "D d of M",
       dateFormat: "Z",
-      onChange: function (selectedDates) {
-        cmp.loadOrders(selectedDates[0])
+      defaultDate: this.date,
+      onChange:  (selectedDates) =>{
+		this.date = selectedDates[0]
+        this.loadOrders()
       }
     })
-      .setDate(new Date(), true);
+    axios.get('/api/delivery/riders')
+      .then(response => {
+		  this.riders = response.data
+		  this.rider = this.rider || this.riders[0].id
+		})
+      .then(()=> this.loadOrders())
   },
   methods: {
-    loadOrders(date) {
-      axios
-        .get('/api/delivery/orders', {params: {date: date}})
-        .then(response => this.orders = response.data)
+    loadOrders() {
+		const date = this.date
+		const riderId = this.rider
+	  	this.$router.replace({query: {date: date.toISOString(), riderId: riderId}})
+      	axios
+        	.get('/api/delivery/orders', {params: {date: date, riderId: riderId}})
+        	.then(response => this.orders = response.data)
     },
     viewOrder(order) {
-      console.log(order)
+      this.$router.push({path: '/receive/orders/' + order.id})
     }
   },
   template: `
@@ -48,8 +64,13 @@ export default {
                 </button>
             </div>
         </div>
-        <div class="px-1 pb-2">
-            <input ref="selectDate" type="text" class="form-control text-center py-0 mt-1">
+        <div class="d-flex mx-1 my-2">
+            <input ref="selectDate" type="text" class="form-control py-0 text-center w-50">
+            <select v-model="rider" @update:modelValue="loadOrders" class="form-select py-0 w-50">
+                    <option v-for="rider in riders" :value="rider.id">
+                        {{ rider.name }}
+                    </option>
+            </select>
         </div>
     </div>
 
