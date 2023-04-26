@@ -2,34 +2,34 @@ import axios from 'axios';
 import DatesUtil from "../../plugin/DatesUtil.js";
 
 export default {
-  data() {
-    return {
-      products: []
-    }
-  },
-  mounted() {
-    const cmp = this;
-    flatpickr(this.$refs.selectDate, {
-      altInput: true,
-      altFormat: "D d of M",
-      mode: "range",
-      dateFormat: "Z",
-      onChange: function (selectedDates) {
-        if (selectedDates.length === 2) {
-          cmp.loadProducts(selectedDates[0], selectedDates[1])
+    data() {
+        return {
+            products: []
         }
-      }
-    })
-      .setDate(DatesUtil.getCurrentRangeWeek(), true);
-  },
-  methods: {
-    loadProducts(dateFrom, dateTo) {
-      axios
-        .get('/api/cooking/products/', {params: {from: dateFrom, to: dateTo}})
-        .then(response => this.products = response.data)
-    }
-  },
-  template: `
+    },
+    mounted() {
+        const cmp = this;
+        flatpickr(this.$refs.selectDate, {
+            altInput: true,
+            altFormat: "D d of M",
+            mode: "range",
+            dateFormat: "Z",
+            onChange: function (selectedDates) {
+                if (selectedDates.length === 2) {
+                    cmp.loadProducts(selectedDates[0], selectedDates[1])
+                }
+            }
+        })
+            .setDate(DatesUtil.getCurrentRangeWeek(), true);
+    },
+    methods: {
+        loadProducts(dateFrom, dateTo) {
+            axios
+                .get('/api/cooking/products/', { params: { from: dateFrom, to: dateTo } })
+                .then(response => this.products = response.data)
+        }
+    },
+    template: `
 <div>
     <div class="fixed">
         <div class="d-flex justify-content-between">

@@ -2,31 +2,42 @@
 	<div class="fixed">
 		<div class="d-flex justify-content-between">
 			<div>
-				<button type="button" class="btn p-2">
-					<router-link class="list-group-item list-group-item-action" to="/">
-						<span class="material-symbols-outlined">chevron_left</span>
+				<button type="button"
+						class="btn p-2">
+					<router-link class="list-group-item list-group-item-action"
+								 to="/">
+						<span class="material-symbols-outlined">
+							chevron_left
+						</span>
 					</router-link>
 				</button>
 			</div>
 			<div class="text-center my-2 flex-fill">
-				<div>Deliver {{orders.length}} Order{{orders.length>1?'s':''}}</div>
+				<div>
+					Deliver {{ orders.length }} Order{{ orders.length > 1 ? 's':'' }}
+				</div>
 			</div>
 			<div>
-				<button type="button" class="btn p-2">
-					<span class="material-symbols-outlined">search</span>
+				<button type="button"
+						class="btn p-2">
+					<span class="material-symbols-outlined">
+						search
+					</span>
 				</button>
 			</div>
 		</div>
-		
+
 		<div class="d-flex mx-1 my-2">
-			<input
-				v-flatpickr="{altInput: true, altFormat: 'D d of M', dateFormat: 'Z'}"
-				v-model="date" 
-				@update:modelValue="loadOrders" 
-				type="text"
-				class="form-control py-0 text-center w-50"> 
-			<select v-model="rider" @update:modelValue="loadOrders" class="form-select text-center py-0 w-50">
-				<option v-for="rider in riders" :value="rider.id">
+			<input v-flatpickr="{altInput: true, altFormat: 'D d of M', dateFormat: 'Z'}"
+				   v-model="date"
+				   @update:modelValue="loadOrders"
+				   type="text"
+				   class="form-control py-0 text-center w-50">
+			<select v-model="rider"
+					@update:modelValue="loadOrders"
+					class="form-select text-center py-0 w-50">
+				<option v-for="rider in riders"
+						:value="rider.id">
 					{{ rider.name }}
 				</option>
 			</select>
@@ -34,13 +45,20 @@
 	</div>
 
 	<div class="container px-1">
-		<ListOrders :orders="orders" @select="viewOrder" />
+		<ListOrders :orders="orders"
+					@select="viewOrder" />
 		<br />
 		<br />
 	</div>
 	<div class="fixed-bottom p-2">
-		<router-link to="/receive/orders/new" class="btn btn-primary w-100">
-			<span class="material-symbols-outlined">add</span> Add order
+		<router-link to="/receive/orders/new"
+					 class="btn btn-primary w-100">
+			<span class="material-symbols-outlined">
+				add
+			</span>
+			<span>
+				Add order
+			</span>
 		</router-link>
 	</div>
 

@@ -3,12 +3,12 @@ import PromptModal from "../PromptModal.js";
 import ConfirmModal from "../ConfirmModal.js";
 
 export default {
-  components: {PromptModal, ConfirmModal},
+  components: { PromptModal, ConfirmModal },
   data() {
     return {
       riders: [
-        {id: 1, name: "Cristian"},
-        {id: 2, name: "Michi"}
+        { id: 1, name: "Cristian" },
+        { id: 2, name: "Michi" }
       ],
       saving: false,
       deliveryDatePicker: null,
@@ -141,7 +141,7 @@ export default {
         axios.post("/api/orders", order)
           .then(response => {
             this.setOrder(response.data)
-            this.$router.replace({path: '/receive/orders/' + response.data.id})
+            this.$router.replace({ path: '/receive/orders/' + response.data.id })
           })
           .then(() => this.saving = false)
       } else {
@@ -154,7 +154,7 @@ export default {
       this.$refs.confirmModal
         .confirm(null, "Delete order?")
         .then(() => axios.delete("/api/orders/" + this.orderId))
-        .then(() => this.$router.push({path: '/receive/orders', replace: true}))
+        .then(() => this.$router.push({ path: '/receive/orders', replace: true }))
         .catch(() => {
         })
     }

@@ -2,43 +2,92 @@
 	<div class="sticky-top">
 		<div class="d-flex justify-content-between">
 			<div>
-				<button type="button" class="btn p-2">
+				<button type="button"
+						class="btn p-2">
 					<div v-on:click="$router.back()"
-						class="list-group-item list-group-item-action">
-						<span class="material-symbols-outlined">chevron_left</span>
+						 class="list-group-item list-group-item-action">
+						<span class="material-symbols-outlined">
+							chevron_left
+						</span>
 					</div>
 				</button>
 			</div>
-			<div class="text-center my-2 flex-fill">Order #1</div>
+			<div class="text-center my-2 flex-fill">
+				Order #1
+			</div>
 			<div class="dropdown">
-				<button class="btn" type="button" data-bs-toggle="dropdown">
-					<span class="material-symbols-outlined">more_vert</span>
+				<button class="btn"
+						type="button"
+						data-bs-toggle="dropdown">
+					<span class="material-symbols-outlined">
+						more_vert
+					</span>
 				</button>
 				<ul class="dropdown-menu dropdown-menu-end">
-					<li><a :class="{disabled:order.customerPhone === null}"
-						class="dropdown-item" :href="whatsappLink" target="__blank"> <span
-							class="material-symbols-outlined">chat</span> WhatsApp customer
-					</a></li>
-					<li><a :class="{disabled:order.customerPhone === null}"
-						class="dropdown-item" :href="telephoneLink"> <span
-							class="material-symbols-outlined">call</span> Call customer
-					</a></li>
-					<li><a :class="{disabled:order.deliveryAddress === null}"
-						class="dropdown-item" :href="googleMapSearch" target="__blank">
-							<span class="material-symbols-outlined">pin_drop</span> Google
-							Map
-					</a></li>
 					<li>
-						<button @click="markAsDelivered" :disabled="order.delivered"
-							class="dropdown-item" type="button">
-							<span class="material-symbols-outlined">deployed_code</span> <span
-								v-if="!order.delivered">Mark as delivered</span><span v-else>Delivered</span>
+						<a :class="{disabled:order.customerPhone === null}"
+						   :href="whatsappLink"
+						   class="dropdown-item"
+						   target="__blank">
+							<span class="material-symbols-outlined">
+								chat
+							</span>
+							<span>
+								WhatsApp customer
+							</span>
+						</a>
+					</li>
+					<li>
+						<a :class="{disabled:order.customerPhone === null}"
+						   :href="telephoneLink"
+						   class="dropdown-item">
+							<span class="material-symbols-outlined">
+								call
+							</span>
+							<span>
+								Call customer
+							</span>
+						</a>
+					</li>
+					<li>
+						<a :class="{disabled:order.deliveryAddress === null}"
+						   class="dropdown-item"
+						   :href="googleMapSearch"
+						   target="__blank">
+							<span class="material-symbols-outlined">
+								pin_drop
+							</span>
+							<span>
+								Google Map
+							</span>
+						</a>
+					</li>
+					<li>
+						<button @click="markAsDelivered"
+								:disabled="order.delivered"
+								class="dropdown-item"
+								type="button">
+							<span class="material-symbols-outlined">
+								deployed_code
+							</span>
+							<span v-if="!order.delivered">
+								Mark as delivered
+							</span>
+							<span v-else>
+								Delivered
+							</span>
 						</button>
 					</li>
-					<li v-if="orderId!==undefined">
-						<button @click="deleteOrder" class="dropdown-item" type="button">
-							<span class="material-symbols-outlined">delete</span> Delete
-							order
+					<li v-if="orderId !== undefined">
+						<button @click="deleteOrder"
+								class="dropdown-item"
+								type="button">
+							<span class="material-symbols-outlined">
+								delete
+							</span>
+							<span>
+								Delete order
+							</span>
 						</button>
 					</li>
 				</ul>
@@ -46,37 +95,70 @@
 		</div>
 	</div>
 
-	<form ref="formOrder" @submit.prevent="saveOrder" novalidate>
+	<form ref="formOrder"
+		  @submit.prevent="saveOrder"
+		  novalidate>
 		<div class="container d-grid gap-2 py-3">
-			<label for="customerName" class="form-label">Name</label> <input
-				v-model="order.customerName" type="text" required
-				class="form-control" id="customerName"> <label
-				for="customerPhone" class="form-label">Phone</label> <input
-				v-model="customerPhone" @input="$handleCursorInput" type="tel"
-				class="form-control" id="customerPhone"
-				pattern="\+\d{1,3}\s\d{1,3}\s\d+"> <label
-				class="form-label">Menu</label>
+			<label for="customerName"
+				   class="form-label">
+				Name
+			</label>
+			<input v-model="order.customerName"
+				   type="text"
+				   required
+				   class="form-control"
+				   id="customerName">
+
+			<label for="customerPhone"
+				   class="form-label">
+				Phone
+			</label>
+			<input v-model="customerPhone"
+				   @input="$handleCursorInput"
+				   type="tel"
+				   class="form-control"
+				   id="customerPhone"
+				   pattern="\+\d{1,3}\s\d{1,3}\s\d+">
+
+			<label class="form-label">
+				Menu
+			</label>
 			<div class="list-group">
-				<div class="list-group-item" v-for="item in order.items"
-					:key="item.productId">
+				<div class="list-group-item"
+					 v-for="item in order.items"
+					 :key="item.productId">
 					<div class="d-flex gap-1">
-						<div class="flex-fill">{{ item.productName }}</div>
-						<div>{{ $formatCurrency(item.productPrice) }}</div>
+						<div class="flex-fill">
+							{{ item.productName }}
+						</div>
+						<div>
+							{{ $formatCurrency(item.productPrice) }}
+						</div>
 					</div>
 					<div class="d-flex w-100 gap-2 align-items-center">
 						<small class="text-body-secondary flex-fill">
-							<div v-if="item.quantity>0" @click="openItemNoteModal(item)">
-								<span :class="{'fst-italic':item.note==''}">{{
-									item.note=='' ? '&lt;add a note&gt;': item.note }}</span> <span
-									class="material-symbols-outlined" style="font-size: 90%">edit</span>
+							<div v-if="item.quantity>0"
+								 @click="openItemNoteModal(item)">
+								<span :class="{'fst-italic':item.note==''}">
+									{{ item.note == '' ? '&lt;add a note&gt;': item.note }}
+								</span>
+								<span class="material-symbols-outlined"
+									  style="font-size: 90%">
+									edit
+								</span>
 							</div>
 						</small>
 						<div class="d-flex gap-1 text-body-secondary">
-							<span @click="item.quantity= Math.max(0,item.quantity-1)"
-								class="material-symbols-outlined">do_not_disturb_on</span> <small
-								:class="{'text-primary': item.quantity>0 }">x{{
-								item.quantity }}</small> <span @click="item.quantity++"
-								class="material-symbols-outlined">add_circle</span>
+							<span @click="item.quantity = Math.max(0, item.quantity - 1)"
+								  class="material-symbols-outlined">
+								do_not_disturb_on
+							</span>
+							<small :class="{'text-primary': item.quantity > 0 }">
+								x{{ item.quantity }}</small>
+							<span @click="item.quantity++"
+								  class="material-symbols-outlined">
+								add_circle
+							</span>
 						</div>
 					</div>
 				</div>
@@ -86,52 +168,85 @@
 
 			<div class="d-grid gap-2">
 
-				<label for="deliveryDate" class="form-label">Delivery Date</label> 
-				<input 
-					v-flatpickr="{altInput: true, altFormat: 'D d of M, Y', dateFormat: 'Z', allowInput: true}"
-					v-model="order.deliveryDate"
-					type="text" 
-					class="form-control"
-					id="deliveryDate" 
-					required>
+				<label for="deliveryDate"
+					   class="form-label">
+					Delivery Date
+				</label>
+				<input v-flatpickr="{altInput: true, altFormat: 'D d of M, Y', dateFormat: 'Z', allowInput: true}"
+					   v-model="order.deliveryDate"
+					   type="text"
+					   class="form-control"
+					   id="deliveryDate"
+					   required>
+
 				<div class="row align-items-center">
 					<div class="col-2">
-						<label for="deliveryDateFrom" class="form-label">From</label>
+						<label for="deliveryDateFrom"
+							   class="form-label">
+							From
+						</label>
 					</div>
 					<div class="col-4">
-						<input ref="deliveryDateFromPicker" type="text"
-							class="form-control" id="deliveryDateFrom" required>
+						<input ref="deliveryDateFromPicker"
+							   type="text"
+							   class="form-control"
+							   id="deliveryDateFrom"
+							   required>
 					</div>
+
 					<div class="col-2">
-						<label for="deliveryDateTo" class="form-label">To</label>
+						<label for="deliveryDateTo"
+							   class="form-label">
+							To
+						</label>
 					</div>
 					<div class="col-4">
-						<input ref="deliveryDateToPicker" type="text" class="form-control"
-							id="deliveryDateTo">
+						<input ref="deliveryDateToPicker"
+							   type="text"
+							   class="form-control"
+							   id="deliveryDateTo">
 					</div>
 				</div>
 
 				<div class="row align-items-center">
 					<div class="col-7">
-						<label for="deliveryAddress" class="form-label">Delivery
-							Address</label>
+						<label for="deliveryAddress"
+							   class="form-label">
+							Delivery Address
+						</label>
 					</div>
 					<div class="col-5">
 						<div class="input-group">
-							<span class="input-group-text">$</span> <input
-								v-model.number="order.deliveryPrice" type="number" step="any"
-								class="form-control text-end" id="deliveryPrice">
+							<span class="input-group-text">
+								$
+							</span>
+							<input v-model.number="order.deliveryPrice"
+								   type="number"
+								   step="any"
+								   class="form-control text-end"
+								   id="deliveryPrice">
 						</div>
 					</div>
 				</div>
-				<input v-model="order.deliveryAddress" type="text"
-					class="form-control" id="deliveryAddress"> <label
-					for="deliveryRiderId" class="form-label">Delivery Rider</label> <select
-					v-model="order.deliveryRiderId" id="deliveryRiderId"
-					class="form-select">
-					<option :value="null">Select a rider</option>
-					<option v-for="rider in riders" :value="rider.id">{{
-						rider.name }}</option>
+				<input v-model="order.deliveryAddress"
+					   type="text"
+					   class="form-control"
+					   id="deliveryAddress">
+					   
+				<label for="deliveryRiderId"
+					   class="form-label">
+					Delivery Rider
+				</label>
+				<select v-model="order.deliveryRiderId"
+						id="deliveryRiderId"
+						class="form-select">
+					<option :value="null">
+						Select a rider
+					</option>
+					<option v-for="rider in riders"
+							:value="rider.id">
+						{{ rider.name }}
+					</option>
 				</select>
 			</div>
 
@@ -139,28 +254,45 @@
 
 			<div class="row align-items-center">
 				<div class="col-7">
-					<label for="discount" class="form-label">Discount</label>
+					<label for="discount"
+						   class="form-label">
+						Discount
+					</label>
 				</div>
 				<div class="col-5">
 					<div class="input-group">
-						<span class="input-group-text">$</span> <input
-							v-model.number="order.discount" type="number" step="any"
-							class="form-control text-end" id="discount">
+						<span class="input-group-text">
+							$
+						</span>
+						<input v-model.number="order.discount"
+							   type="number"
+							   step="any"
+							   class="form-control text-end"
+							   id="discount">
 					</div>
 				</div>
 			</div>
 
-			<label for="note" class="form-label">note</label>
-			<textarea v-model="order.note" class="form-control" id="note"
-				rows="3"></textarea>
+			<label for="note"
+				   class="form-label">
+				note
+			</label>
+			<textarea v-model="order.note"
+					  class="form-control"
+					  id="note"
+					  rows="3"></textarea>
 
-			<br /> <br /> <br />
+			<br />
+			<br />
+			<br />
 		</div>
 
 		<div class="fixed-bottom p-2">
-			<button type="submit" class="btn btn-primary w-100"
-				:disabled="saving">{{orderId===undefined ? 'Place Order' :
-				'Update Order'}} {{ $formatCurrency(computedTotalPrice) }}</button>
+			<button type="submit"
+					class="btn btn-primary w-100"
+					:disabled="saving">
+				{{orderId===undefined ? 'Place Order' : 'Update Order'}} {{ $formatCurrency(computedTotalPrice) }}
+			</button>
 		</div>
 	</form>
 
