@@ -19,7 +19,12 @@
 		</div>
 		
 		<div class="d-flex mx-1 my-2">
-			<input ref="selectDate" type="text" class="form-control py-0 text-center w-50">
+			<input
+				v-flatpickr="{altInput: true, altFormat: 'D d of M', dateFormat: 'Z'}"
+				v-model="date" 
+				@update:modelValue="loadOrders" 
+				type="text"
+				class="form-control py-0 text-center w-50"> 
 			<select v-model="rider" @update:modelValue="loadOrders" class="form-select text-center py-0 w-50">
 				<option v-for="rider in riders" :value="rider.id">
 					{{ rider.name }}

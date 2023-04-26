@@ -8,33 +8,38 @@ const template = await axios.get(import.meta.url.replace(/\.js$/, ".html"))
 export default {
 	components: { ListOrders },
 	data() {
-		const [from, to] = DatesUtil.getCurrentRangeWeek()
+		const [d1, d2] = DatesUtil.getCurrentRangeWeek()
+		const from = this.$route.query.from || d1.toISOString()
+		const to = this.$route.query.to || d2.toISOString()
 		return {
-			from: new Date(this.$route.query.from || from.toISOString()),
-			to: new Date(this.$route.query.to || to.toISOString()),
+			from: from,
+			to: to,
 			orders: []
 		}
 	},
+	computed: {
+		dateRange: {
+			get() {
+				if (this.to === undefined) return this.from
+				return this.from + ' to ' + this.to
+			},
+			set(value) {
+				const [from, to] = value.split(" to ")
+				this.from = from
+				this.to = to
+			},
+		}
+	},
 	mounted() {
-		const cmp = this;
-		flatpickr(this.$refs.selectDate, {
-			altInput: true,
-			altFormat: "D d of M",
-			mode: "range",
-			dateFormat: "Z",
-			defaultDate: [this.from, this.to],
-			onChange: function(selectedDates) {
-				if (selectedDates.length === 2) {
-					cmp.loadOrders(selectedDates[0], selectedDates[1])
-				}
-			}
-		})
-		this.loadOrders(this.from, this.to)
+		this.loadOrders()
 	},
 	methods: {
-		loadOrders(dateFrom, dateTo) {
+		loadOrders() {
+			const dateFrom = this.from
+			const dateTo = this.to
+			if (dateTo === undefined) return
 			this.$router.replace({
-				query: { from: dateFrom.toISOString(), to: dateTo.toISOString() }
+				query: { from: dateFrom, to: dateTo }
 			})
 			axios
 				.get('/api/orders', { params: { from: dateFrom, to: dateTo } })

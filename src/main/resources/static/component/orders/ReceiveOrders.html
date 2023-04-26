@@ -17,7 +17,11 @@
 			</div>
 		</div>
 		<div class="px-1 pb-2">
-			<input ref="selectDate" type="text"
+			<input
+				v-flatpickr="{altInput: true, altFormat: 'D d of M', dateFormat: 'Z', mode: 'range', allowInput: true}"
+				v-model="dateRange"
+				@update:modelValue="loadOrders" 
+				type="text"
 				class="form-control text-center py-0 mt-1">
 		</div>
 	</div>

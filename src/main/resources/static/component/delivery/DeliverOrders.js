@@ -10,23 +10,13 @@ export default {
 		const today = new Date()
 		today.setHours(0, 0, 0, 0)
 		return {
-			date: new Date(this.$route.query.date || today.toISOString()),
+			date: this.$route.query.date || today.toISOString(),
 			rider: this.$route.query.rider,
 			riders: [],
 			orders: []
 		}
 	},
 	mounted() {
-		flatpickr(this.$refs.selectDate, {
-			altInput: true,
-			altFormat: "D d of M",
-			dateFormat: "Z",
-			defaultDate: this.date,
-			onChange: (selectedDates) => {
-				this.date = selectedDates[0]
-				this.loadOrders()
-			}
-		})
 		axios.get('/api/delivery/riders')
 			.then(response => {
 				this.riders = response.data
@@ -38,7 +28,7 @@ export default {
 		loadOrders() {
 			const date = this.date
 			const riderId = this.rider
-			this.$router.replace({ query: { date: date.toISOString(), riderId: riderId } })
+			this.$router.replace({ query: { date: date, riderId: riderId } })
 			axios
 				.get('/api/delivery/orders', { params: { date: date, riderId: riderId } })
 				.then(response => this.orders = response.data)

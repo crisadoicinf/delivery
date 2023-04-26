@@ -86,9 +86,14 @@
 
 			<div class="d-grid gap-2">
 
-				<label for="deliveryDate" class="form-label">Delivery Date</label> <input
-					ref="deliveryDatePicker" type="text" class="form-control"
-					id="deliveryDate" required>
+				<label for="deliveryDate" class="form-label">Delivery Date</label> 
+				<input 
+					v-flatpickr="{altInput: true, altFormat: 'D d of M, Y', dateFormat: 'Z', allowInput: true}"
+					v-model="order.deliveryDate"
+					type="text" 
+					class="form-control"
+					id="deliveryDate" 
+					required>
 				<div class="row align-items-center">
 					<div class="col-2">
 						<label for="deliveryDateFrom" class="form-label">From</label>

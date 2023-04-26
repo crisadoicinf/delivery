@@ -13,7 +13,6 @@ export default {
 		return {
 			riders: [],
 			saving: false,
-			deliveryDatePicker: null,
 			deliveryDateFromPicker: null,
 			deliveryDateRangePicker: null,
 			order: {
@@ -65,13 +64,6 @@ export default {
 		}
 	},
 	mounted() {
-		this.deliveryDatePicker = flatpickr(this.$refs.deliveryDatePicker, {
-			altInput: true,
-			altFormat: "D d of M, Y",
-			dateFormat: "Z",
-			allowInput: true,
-			defaultDate: this.order.deliveryDate,
-		});
 		this.deliveryDateFromPicker = flatpickr(this.$refs.deliveryDateFromPicker, {
 			altInput: true,
 			enableTime: true,
@@ -130,7 +122,7 @@ export default {
 			})
 			order.items = this.order.items
 			this.order = order
-			this.deliveryDatePicker.setDate(order.deliveryDate, true)
+			//this.deliveryDatePicker.setDate(order.deliveryDate, true)
 			this.deliveryDateFromPicker.setDate(order.deliveryDate, true)
 			this.deliveryDateToPicker.setDate(order.deliveryDateRange, true)
 		},
@@ -156,7 +148,9 @@ export default {
 						note: item.note,
 					}
 				})
-			const deliveryDate = this.deliveryDatePicker.selectedDates[0]
+			console.log(order.deliveryDate)
+			console.log(new Date(order.deliveryDate))
+			const deliveryDate = new Date(order.deliveryDate)
 			const deliveryDateFrom = this.deliveryDateFromPicker.selectedDates[0]
 			const deliveryDateTo = this.deliveryDateToPicker.selectedDates[0]
 			if (deliveryDate) {
