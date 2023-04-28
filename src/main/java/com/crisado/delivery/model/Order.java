@@ -46,22 +46,19 @@ public class Order {
     private OrderDelivery delivery;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinTable(
-            name = "order_payment",
-            joinColumns = @JoinColumn(name = "order_id"),
-            inverseJoinColumns = @JoinColumn(name = "payment_id")
-    )
+    @JoinTable(name = "order_payment", joinColumns = @JoinColumn(name = "order_id"), inverseJoinColumns = @JoinColumn(name = "payment_id"))
     @OrderBy("date asc")
     private Set<Payment> payments;
 
     public boolean isPaid() {
-        if (getPayments() == null) {
+        double totalPrice = getTotalPrice();
+        if (totalPrice == 0 || payments == null || payments.isEmpty()) {
             return false;
         }
-        double amountPaid = getPayments().stream()
+        double amountPaid = payments.stream()
                 .map(Payment::getAmount)
                 .reduce(0d, Double::sum);
-        return amountPaid >= getTotalPrice();
+        return amountPaid >= totalPrice;
     }
 
     public double getTotalPrice() {
