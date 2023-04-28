@@ -17,14 +17,14 @@
 		<div class="d-flex justify-content-end align-items-center">
 			<div class="d-flex gap-1">
 				<button type="button"
-						class="btn"
+						class="btn border-0"
 						@click="$emit('select', order)">
 					<span class="material-symbols-outlined">
 						edit
 					</span>
 				</button>
 				<a target="__blank"
-				   class="btn"
+				   class="btn border-0"
 				   :href="getGoogleMapLink(order)"
 				   :class="{disabled: order.deliveryAddress == null}">
 					<span class="material-symbols-outlined">
@@ -32,7 +32,7 @@
 					</span>
 				</a>
 				<button type="button"
-						class="btn"
+						class="btn border-0"
 						@click="$emit('chat', order)"
 						:class="{disabled: order.customerPhone == null}">
 					<span class="material-symbols-outlined">
@@ -40,7 +40,7 @@
 					</span>
 				</button>
 				<a target="__blank"
-				   class="btn"
+				   class="btn border-0"
 				   :href="getTelephoneLink(order)"
 				   :class="{disabled: order.customerPhone == null}">
 					<span class="material-symbols-outlined">
@@ -48,7 +48,7 @@
 					</span>
 				</a>
 				<button type="button"
-						class="btn"
+						class="btn border-0"
 						@click="$emit('delivered', order)"
 						:disabled="order.delivered">
 					<span class="material-symbols-outlined">
