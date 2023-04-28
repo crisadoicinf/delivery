@@ -1,0 +1,58 @@
+<div class="list-group">
+	<div v-for="order in orders"
+		 :key="order.id"
+		 class="list-group-item">
+		<div class="d-flex justify-content-between align-items-center">
+			<div class="h5">
+				<span :class="{'text-success': order.delivered}">
+					#{{ order.id }} {{ order.customerName }}
+				</span>
+				<span> - </span>
+				<span :class="{'text-danger': !order.paid, 'text-success': order.paid}">
+					{{ $formatCurrency(order.totalPrice) }}
+				</span>
+			</div>
+			<div class="d-flex gap-1">
+				<button type="button"
+						class="btn"
+						@click="$emit('select', order)">
+					<span class="material-symbols-outlined">
+						edit
+					</span>
+				</button>
+				<a target="__blank"
+				   class="btn"
+				   :href="getGoogleMapLink(order)"
+				   :class="{disabled: order.deliveryAddress == null}">
+					<span class="material-symbols-outlined">
+						pin_drop
+					</span>
+				</a>
+				<button type="button"
+						class="btn"
+						@click="$emit('chat', order)"
+						:class="{disabled: order.customerPhone == null}">
+					<span class="material-symbols-outlined">
+						chat
+					</span>
+				</button>
+				<a target="__blank"
+				   class="btn"
+				   :href="getTelephoneLink(order)"
+				   :class="{disabled: order.customerPhone == null}">
+					<span class="material-symbols-outlined">
+						call
+					</span>
+				</a>
+				<button type="button"
+						class="btn"
+						:class="{'text-danger': !order.delivered}"
+						:disabled="order.delivered">
+					<span class="material-symbols-outlined">
+						deployed_code
+					</span>
+				</button>
+			</div>
+		</div>
+	</div>
+</div>

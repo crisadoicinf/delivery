@@ -1,0 +1,42 @@
+<div class="modal">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Send a WhatsApp message
+                </h5>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <span v-for="message in messages"
+                          @click="text+= message + ' '"
+                          style="cursor: pointer;"
+                          class="border rounded-pill m-1 p-1 px-2">
+                        {{message}}
+                    </span>
+                </div>
+                <br />
+                <div class="border rounded-pill m-1 p-1 px-2">
+                    &nbsp;{{ text }}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button @click="text= ''"
+                        type="button"
+                        class="btn">
+                    CLEAN
+                </button>
+                <a :href="chatLink"
+                   @focusout="text= ''"
+                   target="_blank"
+                   class="btn text-primary">
+                    OPEN WHATSAPP
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

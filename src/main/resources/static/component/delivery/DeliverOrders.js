@@ -1,11 +1,12 @@
 import axios from 'axios';
-import ListOrders from "../orders/ListOrders.js";
+import ListOrders from "./ListOrders.js";
+import WhatsAppModal from "./WhatsAppModal.js"
 
 const template = await axios.get(import.meta.url.replace(/\.js$/, ".html"))
 	.then(response => response.data)
 
 export default {
-	components: { ListOrders },
+	components: { ListOrders, WhatsAppModal },
 	data() {
 		const today = new Date()
 		today.setHours(0, 0, 0, 0)
@@ -31,10 +32,18 @@ export default {
 			this.$router.replace({ query: { date: date, riderId: riderId } })
 			axios
 				.get('/api/delivery/orders', { params: { date: date, riderId: riderId } })
-				.then(response => this.orders = response.data)
+				.then(response => {
+					const orders = response.data;
+					orders.sort((o1, o2) => o1.customerName.localeCompare(o2.customerName))
+					this.orders = orders
+				})
 		},
 		viewOrder(order) {
 			this.$router.push({ path: '/receive/orders/' + order.id })
+		},
+		openWhatsappModal(order) {
+			console.log(order)
+			this.$refs.whatsAppModal.show(order.customerPhone)
 		}
 	},
 	template: template

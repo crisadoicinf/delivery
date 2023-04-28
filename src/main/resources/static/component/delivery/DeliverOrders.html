@@ -46,7 +46,9 @@
 
 	<div class="container px-1">
 		<ListOrders :orders="orders"
-					@select="viewOrder" />
+					@select="viewOrder"
+					@chat="openWhatsappModal" />
+		<WhatsAppModal ref="whatsAppModal" />
 		<br />
 		<br />
 	</div>
