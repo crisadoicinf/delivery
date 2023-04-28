@@ -41,9 +41,12 @@ export default {
 		viewOrder(order) {
 			this.$router.push({ path: '/receive/orders/' + order.id })
 		},
-		openWhatsappModal(order) {
-			console.log(order)
+		openWhatsAppModal(order) {
 			this.$refs.whatsAppModal.show(order.customerPhone)
+		},
+		setOrderDelivered(order) {
+			axios.put("/api/delivery/orders/" + order.id + "?delivered=true")
+				.then(() => order.delivered = true)
 		}
 	},
 	template: template

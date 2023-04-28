@@ -14,7 +14,7 @@
 			</div>
 			<div class="text-center my-2 flex-fill">
 				<div>
-					Deliver {{ orders.length }} Order{{ orders.length > 1 ? 's':'' }}
+					{{ orders.filter(o => o.delivered).length }}/{{ orders.length }} Order{{ orders.length > 1 ? 's':'' }} delivered
 				</div>
 			</div>
 			<div>
@@ -47,21 +47,11 @@
 	<div class="container px-1">
 		<ListOrders :orders="orders"
 					@select="viewOrder"
-					@chat="openWhatsappModal" />
+					@chat="openWhatsAppModal"
+					@delivered="setOrderDelivered" />
 		<WhatsAppModal ref="whatsAppModal" />
 		<br />
 		<br />
-	</div>
-	<div class="fixed-bottom p-2">
-		<router-link to="/receive/orders/new"
-					 class="btn btn-primary w-100">
-			<span class="material-symbols-outlined">
-				add
-			</span>
-			<span>
-				Add order
-			</span>
-		</router-link>
 	</div>
 
 </div>

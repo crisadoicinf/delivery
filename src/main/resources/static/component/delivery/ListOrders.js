@@ -5,7 +5,7 @@ const template = await axios.get(import.meta.url.replace(/\.js$/, ".html"))
 
 export default {
 	props: ['orders'],
-	emits: ['select', 'chat'],
+	emits: ['select', 'chat', 'delivered'],
 	template: template,
 	methods: {
 		getTelephoneLink(order) {
