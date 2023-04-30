@@ -1,5 +1,6 @@
 package com.crisado.delivery.service;
 
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -23,7 +24,8 @@ public class OrderDeliveryService {
 	private final OrderDeliveryRepository deliveryRepository;
 
 	public List<Order> getOrders(ZonedDateTime date, int riderId) {
-		return orderRepository.findAllByDeliveryDateAndRiderId(date, riderId);
+		ZonedDateTime newDay = date.withZoneSameInstant(ZoneId.systemDefault());
+		return orderRepository.findAllByDeliveryDateAndRiderId(newDay, riderId);
 	}
 
 	public void markOrderDelivered(long orderId, boolean delivered) {
