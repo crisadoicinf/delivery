@@ -21,10 +21,10 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
              from Order as o
              join o.delivery d
              left join d.rider r
-             where date(o.delivery.date) = date(:date)
+             where o.delivery.date between :from and :to
              and (o.delivery.rider.id is null or o.delivery.rider.id = :riderId)
             """)
-    List<Order> findAllByDeliveryDateAndRiderId(@Param("date") ZonedDateTime date, @Param("riderId") int riderId);
+    List<Order> findAllByDeliveryDateAndRiderId(@Param("from") ZonedDateTime from, @Param("to") ZonedDateTime to, @Param("riderId") int riderId);
 
     @Query(value = """
              select new com.crisado.delivery.model.OrdersCountByDay(day(o.delivery.date), count(o.id))

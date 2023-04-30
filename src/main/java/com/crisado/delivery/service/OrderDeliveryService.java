@@ -24,8 +24,8 @@ public class OrderDeliveryService {
 	private final OrderDeliveryRepository deliveryRepository;
 
 	public List<Order> getOrders(ZonedDateTime date, int riderId) {
-		ZonedDateTime newDay = date.withZoneSameInstant(ZoneId.systemDefault());
-		return orderRepository.findAllByDeliveryDateAndRiderId(newDay, riderId);
+		ZonedDateTime to = date.plusDays(1);
+		return orderRepository.findAllByDeliveryDateAndRiderId(date, to, riderId);
 	}
 
 	public void markOrderDelivered(long orderId, boolean delivered) {
