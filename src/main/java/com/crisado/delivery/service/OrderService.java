@@ -30,8 +30,8 @@ public class OrderService {
         return productRepository.findAll();
     }
 
-    public Order getOrder(long id) {
-        return orderRepository.findById(id)
+    public Order getOrder(long orderId) {
+        return orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found"));
     }
 
@@ -42,9 +42,8 @@ public class OrderService {
         return saveOrder(order, orderRequest);
     }
 
-    public Order updateOrder(long id, OrderRequest orderRequest) {
-        Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+    public Order updateOrder(long orderId, OrderRequest orderRequest) {
+        Order order = getOrder(orderId);
         return saveOrder(order, orderRequest);
     }
 
@@ -56,8 +55,8 @@ public class OrderService {
         return order;
     }
 
-    public void deleteOrder(Long id) {
-        Order order = orderRepository.findById(id)
+    public void deleteOrder(Long orderId) {
+        Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found"));
         orderRepository.delete(order);
     }
