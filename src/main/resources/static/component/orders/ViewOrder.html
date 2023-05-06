@@ -78,6 +78,19 @@
 							</span>
 						</button>
 					</li>
+					<li>
+						<button @click="openPaymentModal"
+								:disabled="orderId === undefined"
+								class="dropdown-item"
+								type="button">
+							<span class="material-symbols-outlined">
+								paid
+							</span>
+							<span>
+								Payments
+							</span>
+						</button>
+					</li>
 					<li v-if="orderId !== undefined">
 						<button @click="deleteOrder"
 								class="dropdown-item"
@@ -232,7 +245,7 @@
 					   type="text"
 					   class="form-control"
 					   id="deliveryAddress">
-					   
+
 				<label for="deliveryRiderId"
 					   class="form-label">
 					Delivery Rider
@@ -298,4 +311,7 @@
 
 	<PromptModal ref="promptModal" />
 	<ConfirmModal ref="confirmModal" />
+	<PaymentsModal ref="paymentModal"
+				   :orderId="orderId"
+				   :totalAmount="computedTotalPrice" />
 </div>

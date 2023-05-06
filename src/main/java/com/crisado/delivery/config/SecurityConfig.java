@@ -23,7 +23,7 @@ import lombok.Setter;
 @EnableWebSecurity
 @ConfigurationProperties("security")
 @Setter
-public class SecurityConfiguration {
+public class SecurityConfig {
 	
 	private List<UserProp> users;
 

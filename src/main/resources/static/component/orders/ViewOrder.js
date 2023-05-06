@@ -3,12 +3,13 @@ import PromptModal from "../PromptModal.js";
 import ConfirmModal from "../ConfirmModal.js";
 import DatesUtil from "../../plugin/DatesUtil.js";
 import { formatPhoneNumber } from "../../plugin/FormatterPlugin.js";
+import PaymentsModal from './PaymentsModal.js';
 
 const template = await axios.get(import.meta.url.replace(/\.js$/, ".html"))
 	.then(response => response.data)
 
 export default {
-	components: { PromptModal, ConfirmModal },
+	components: { PromptModal, ConfirmModal, PaymentsModal },
 	data() {
 		return {
 			riders: [],
@@ -133,6 +134,10 @@ export default {
 				.catch(() => {
 				})
 		},
+		openPaymentModal(){
+			this.$refs.paymentModal
+				.show()
+		},
 		saveOrder() {
 			this.$el.querySelectorAll(":invalid").forEach(el => el.classList.add("is-invalid"))
 			const form = this.$refs.formOrder
@@ -148,8 +153,6 @@ export default {
 						note: item.note,
 					}
 				})
-			console.log(order.deliveryDate)
-			console.log(new Date(order.deliveryDate))
 			const deliveryDate = new Date(order.deliveryDate)
 			const deliveryDateFrom = this.deliveryDateFromPicker.selectedDates[0]
 			const deliveryDateTo = this.deliveryDateToPicker.selectedDates[0]

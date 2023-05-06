@@ -1,0 +1,78 @@
+<div>
+
+	<form ref="formPayment"
+		  @submit.prevent="$emit('save')"
+		  novalidate>
+
+		<div class="d-grid gap-2">
+			<label for="paymentType"
+				   class="form-label">
+				Type
+			</label>
+			<select v-model="payment.type"
+					:disabled="payment.id !== null"
+					id="paymentType"
+					class="form-select">
+				<option v-for="ttype in transferenceTypes"
+						:value="ttype.value">
+					{{ ttype.name }}
+				</option>
+			</select>
+
+			<label for="paymentAmount"
+				   class="form-label">
+				Amount
+			</label>
+			<input v-model="payment.amount"
+				   type="text"
+				   class="form-control"
+				   id="paymentAmount">
+
+			<!-- cash-->
+			<div v-if="payment.type === 'cash'">
+				<label for="rideriId"
+					   class="form-label">
+					Rider
+				</label>
+				<select v-model="payment.riderId"
+						id="rideriId"
+						class="form-select">
+					<option v-for="rider in riders"
+							:value="rider.id">
+						{{ rider.name }}
+					</option>
+				</select>
+			</div>
+
+			<!-- transference -->
+			<div v-if="payment.type === 'transference'">
+				<label for="bankAccount"
+					   class="form-label">
+					Bank Account
+				</label>
+				<select v-model="payment.bankAccountId"
+						id="paymentType"
+						class="form-select">
+					<option v-for="account in bankAccounts"
+							:value="account.id">
+						{{ account.owner }} - {{ account.name }}
+					</option>
+				</select>
+			</div>
+
+			<div>
+				<button type="button"
+						class="btn w-50"
+						@click="$emit('cancel')">
+					CANCEL
+				</button>
+				<button type="submit"
+						class="btn text-primary w-50">
+					SAVE
+				</button>
+			</div>
+
+		</div>
+
+	</form>
+</div>

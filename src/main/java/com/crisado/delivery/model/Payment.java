@@ -33,4 +33,8 @@ public abstract class Payment {
     @Column(name = "amount")
     private Double amount;
 
+    public abstract String getRecipientName();
+    
+    public abstract String getRecipientType();
+    
 }

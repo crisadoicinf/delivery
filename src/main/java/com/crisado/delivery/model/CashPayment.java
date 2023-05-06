@@ -1,6 +1,5 @@
 package com.crisado.delivery.model;
 
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -12,25 +11,26 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 @Entity
-@Table(name = "transference_payment")
+@Table(name = "cash_payment")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class TransferencePayment extends Payment {
+public class CashPayment extends Payment {
 
     @ManyToOne
-    @JoinColumn(name = "bank_account_id")
-    private BankAccount bankAccount;
+    @JoinColumn(name = "rider_id")
+    private Rider rider;
 
     @Override
     public String getRecipientName() {
-        return bankAccount.getOwner();
+        return rider.getName();
     }
 
     @Override
     public String getRecipientType() {
-        return "transference - " + bankAccount.getName();
+        return "cash";
     }
+
 }

@@ -1,0 +1,38 @@
+<div>
+    <div ref="modal"
+         class="modal"
+         tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        Payments
+                    </h5>
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <PaymentsList ref="paymentsList"
+                                  :orderId="orderId" />
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit"
+                            class="btn btn-primary w-100"
+                            :disabled="isAddingPayment"
+                            @click="addPayment">
+                        ADD PAYMENT ({{ $formatCurrency(remainAmount) }} REMAING)
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+    <ConfirmModal ref="confirmModal" />
+</div>

@@ -1,0 +1,31 @@
+<div class="list-group">
+    <div v-for="(payment, pi) in payments"
+         :key="payment.id"
+         class="list-group-item">
+        <div v-if="payment.id !== null"
+             @click="toggleFormPayment(payment)"
+             class="d-flex justify-content-between align-items-start">
+            <div>
+                <div class="fw-bold">
+                    {{payment.recipientName}}
+                </div>
+                <small>
+                    {{payment.recipientType}}
+                </small>
+            </div>
+            <div>
+                {{ $formatCurrency(payment.amount) }}
+            </div>
+        </div>
+
+        <div v-if="payment.id === null || paymentForms[pi].editing"
+             class="py-1">
+            <small v-if="payment.id === null"
+                   class="fst-italic">New payment</small>
+            <hr v-else />
+            <PaymentForm :payment="paymentForms[pi].value"
+                         @cancel="hideFormPayment(payment)"
+                         @save="savePayment(payment)" />
+        </div>
+    </div>
+</div>
