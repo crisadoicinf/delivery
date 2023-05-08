@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.ZonedDateTime;
+import java.util.HashSet;
 import java.util.Set;
 
 import static jakarta.persistence.GenerationType.SEQUENCE;
@@ -52,7 +53,7 @@ public class Order {
 
     public boolean isPaid() {
         double totalPrice = getTotalPrice();
-        if (totalPrice == 0 || payments == null || payments.isEmpty()) {
+        if (totalPrice == 0 || payments.isEmpty()) {
             return false;
         }
         double amountPaid = payments.stream()

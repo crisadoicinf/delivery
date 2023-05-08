@@ -46,7 +46,7 @@ public class OrderDeliveryServiceTest {
 
                 var actualOrders = service.getOrders(date, riderId);
                 assertThat(actualOrders)
-                                .isEqualTo(orders)
+                                .isSameAs(orders)
                                 .containsExactly(order1, order2);
         }
 

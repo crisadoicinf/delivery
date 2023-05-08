@@ -25,23 +25,23 @@ public class OrderController {
     private final ModelMapper mapper;
 
     @GetMapping("/products")
-    public List<OrderProductList> getProducts() {
-        return orderService.getProducts().stream()
+    public List<OrderProductList> getAllProducts() {
+        return orderService.getAllProducts().stream()
                 .map(order -> mapper.map(order, OrderProductList.class))
                 .collect(toList());
     }
 
     @GetMapping("/count")
-    public Map<Integer, Long> getOrdersCountByMonth(@RequestParam int month) {
-        return orderService.getOrdersCountByMonth(month);
+    public Map<Integer, Long> getDailyAmountOfOrdersByMonth(@RequestParam int month) {
+        return orderService.getDailyAmountOfOrdersByMonth(month);
     }
 
     @GetMapping
-    public List<OrderListResponse> getOrders(
+    public List<OrderListResponse> getOrdersBetweenDates(
             @RequestParam ZonedDateTime from,
             @RequestParam ZonedDateTime to
     ) {
-        return orderService.getOrders(from, to).stream()
+        return orderService.getOrdersBetweenDates(from, to).stream()
                 .map(order -> mapper.map(order, OrderListResponse.class))
                 .collect(toList());
     }
