@@ -21,32 +21,90 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final RiderRepository riderRepository;
 
+    /**
+     * Retrieves a list of orders that have a delivery
+     * date between the specified start and end dates.
+     *
+     * @param from The start date of the date range to search for orders.
+     * 
+     * @param to   The end date of the date range to search for orders.
+     * 
+     * @return A list of orders that have a delivery date between the specified
+     *         start and end dates.
+     */
     public List<Order> getOrdersBetweenDates(ZonedDateTime from, ZonedDateTime to) {
         return orderRepository.findAllByDeliveryDateBetween(from, to);
     }
 
+    /**
+     * Retrieves a list of all products.
+     *
+     * @return A list of all products.
+     */
     public List<Product> getAllProducts() {
         return productRepository.findAll();
     }
 
+    /**
+     * Retrieves the total number of orders delivered each day of the specified
+     * month and returns it as a map with the day as key and the number of orders as
+     * the value.
+     * Only days with orders are present in the map
+     *
+     * @param month The month for which to retrieve the daily order count.
+     * 
+     * @return A map of delivery days in the specified month to the total number of
+     *         orders delivered on that day.
+     */
     public Map<Integer, Long> getDailyAmountOfOrdersByMonth(int month) {
         return orderRepository.countTotalByDeliveryMonthDay(month)
                 .stream()
                 .collect(Collectors.toMap(OrdersCountByDay::day, OrdersCountByDay::total));
     }
 
+    /**
+     * Retrieves the order with the specified ID.
+     *
+     * @param orderId The ID of the order to retrieve.
+     * 
+     * @return The order with the specified ID.
+     * 
+     * @throws IllegalArgumentException if an order with the specified ID is not
+     *                                  found.
+     */
     public Order getOrder(long orderId) {
         return orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found"));
     }
 
+    /**
+     * Creates a new order with the specified items and saves it.
+     *
+     * @param orderRequest The request object containing the items for the new
+     *                     order.
+     * 
+     * @return The newly created order.
+     */
     public Order createOrder(OrderRequest orderRequest) {
         Order order = Order.builder()
-            .items(new HashSet<>())
-            .build();
+                .items(new HashSet<>())
+                .build();
         return saveOrder(order, orderRequest);
     }
 
+    /**
+     * Updates the order with the specified ID with the items from the provided
+     * order request and saves it.
+     *
+     * @param orderId      The ID of the order to update.
+     * @param orderRequest The request object containing the updated items for the
+     *                     order.
+     * 
+     * @return The updated order.
+     * 
+     * @throws IllegalArgumentException if an order with the specified ID is not
+     *                                  found.
+     */
     public Order updateOrder(long orderId, OrderRequest orderRequest) {
         Order order = getOrder(orderId);
         return saveOrder(order, orderRequest);
@@ -59,11 +117,31 @@ public class OrderService {
         return order;
     }
 
+    /**
+     * Deletes the order with the specified ID.
+     *
+     * @param orderId The ID of the order to delete.
+     * 
+     * @throws IllegalArgumentException if an order with the specified ID is not
+     *                                  found.
+     */
     public void deleteOrder(Long orderId) {
         Order order = getOrder(orderId);
         orderRepository.delete(order);
     }
 
+    /**
+     * Builds an order object based on the provided order request and sets its
+     * properties.
+     *
+     * @param orderRequest The request object containing the information for the new
+     *                     order.
+     * @param order        The order object to populate with the information from
+     *                     the request.
+     * 
+     * @throws IllegalArgumentException if the provided rider ID in the order
+     *                                  request does not match an existing rider.
+     */
     private void buildOrder(OrderRequest orderRequest, Order order) {
         order.setDate(ZonedDateTime.now());
         order.setCustomerName(orderRequest.getCustomerName());
@@ -84,6 +162,16 @@ public class OrderService {
         order.setNote(orderRequest.getNote());
     }
 
+    /**
+     * Builds and updates the set of order items for an order based on the provided
+     * list of order item requests.
+     * 
+     * @param order        The order for which to update the order items.
+     * @param itemsRequest The list of order item requests.
+     * 
+     * @throws IllegalArgumentException if a product for an order item cannot be
+     *                                  found.
+     */
     private void buildOrderItems(Order order, List<OrderRequest.OrderItem> itemsRequest) {
         Set<OrderItem> orderItems = new HashSet<>(order.getItems());
         order.getItems().clear();

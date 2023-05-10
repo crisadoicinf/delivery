@@ -41,7 +41,7 @@ public class OrderDeliveryServiceTest {
                 var order2 = new Order();
                 var orders = List.of(order1, order2);
 
-                when(orderRepository.findAllByDeliveryDateAndRiderId(date, date.plusDays(1), riderId))
+                when(orderRepository.findAllByDeliveryDateAndRiderIdOrNull(date, date.plusDays(1), riderId))
                                 .thenReturn(orders);
 
                 var actualOrders = service.getOrders(date, riderId);
