@@ -4,9 +4,9 @@ import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.crisado.delivery.dto.CashPaymentList;
-import com.crisado.delivery.dto.PaymentList;
-import com.crisado.delivery.dto.TransferencePaymentList;
+import com.crisado.delivery.dto.CashPaymentDto;
+import com.crisado.delivery.dto.PaymentDto;
+import com.crisado.delivery.dto.TransferencePaymentDto;
 import com.crisado.delivery.model.CashPayment;
 import com.crisado.delivery.model.TransferencePayment;
 
@@ -16,10 +16,10 @@ public class MapperConfig {
     @Bean
     public ModelMapper getModelMapper() {
         var mapper = new ModelMapper();
-        mapper.createTypeMap(CashPayment.class, PaymentList.class)
-                .setConverter(context -> mapper.map(context.getSource(), CashPaymentList.class));
-        mapper.createTypeMap(TransferencePayment.class, PaymentList.class)
-                .setConverter(context -> mapper.map(context.getSource(), TransferencePaymentList.class));
+        mapper.createTypeMap(CashPayment.class, PaymentDto.class)
+                .setConverter(context -> mapper.map(context.getSource(), CashPaymentDto.class));
+        mapper.createTypeMap(TransferencePayment.class, PaymentDto.class)
+                .setConverter(context -> mapper.map(context.getSource(), TransferencePaymentDto.class));
         return mapper;
     }
     

@@ -1,19 +1,19 @@
 package com.crisado.delivery.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class TransferencePaymentList extends PaymentList {
+public class TransferencePaymentDto extends PaymentDto {
 
     private Integer bankAccountId;
 }

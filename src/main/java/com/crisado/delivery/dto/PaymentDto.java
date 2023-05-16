@@ -10,18 +10,20 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type", visible = true, defaultImpl = PaymentList.class)
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type", visible = true, defaultImpl = PaymentDto.class)
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = CashPaymentList.class, name = "cash"),
-        @JsonSubTypes.Type(value = TransferencePaymentList.class, name = "transference")
+        @JsonSubTypes.Type(value = CashPaymentDto.class, name = "cash"),
+        @JsonSubTypes.Type(value = TransferencePaymentDto.class, name = "transference")
 })
 @Getter
 @Setter
+@SuperBuilder
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public abstract class PaymentList {
+public abstract class PaymentDto {
 
     private Long id;
     private Double amount;

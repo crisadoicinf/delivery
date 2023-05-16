@@ -1,111 +1,51 @@
 package com.crisado.delivery.controller;
 
-import com.crisado.delivery.dto.CashPaymentList;
-import com.crisado.delivery.dto.PaymentList;
-import com.crisado.delivery.dto.TransferencePaymentList;
-import com.crisado.delivery.model.CashPayment;
-import com.crisado.delivery.model.Order;
-import com.crisado.delivery.model.Payment;
-import com.crisado.delivery.model.TransferencePayment;
-import com.crisado.delivery.repository.BankAccountRepository;
-import com.crisado.delivery.repository.OrderRepository;
-import com.crisado.delivery.repository.RiderRepository;
-import com.crisado.delivery.service.OrderService;
+import java.net.URI;
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.crisado.delivery.dto.PaymentDto;
+import com.crisado.delivery.service.OrderPaymentService;
 
 import lombok.AllArgsConstructor;
-import org.modelmapper.ModelMapper;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.HashSet;
-import java.util.List;
-import static java.util.stream.Collectors.toList;
-
-import java.time.ZonedDateTime;
 
 @AllArgsConstructor
 @RestController
 @RequestMapping("/api/orders/{orderId}")
 public class OrderPaymentController {
 
-    private final OrderRepository orderRepository;
-    private final OrderService orderService;
-    private final RiderRepository riderRepository;
-    private final BankAccountRepository bankAccountRepository;
-    private final ModelMapper mapper;
+    private final OrderPaymentService orderPaymentService;
 
     @GetMapping("/payments")
-    public List<PaymentList> getPayments(@PathVariable long orderId) {
-        Order order = orderService.getOrder(orderId);
-        return order.getPayments()
-                .stream()
-                .map(payment -> mapper.map(payment, PaymentList.class))
-                .collect(toList());
+    public ResponseEntity<List<PaymentDto>> getPayments(@PathVariable long orderId) {
+        List<PaymentDto> payments = orderPaymentService.getPayments(orderId);
+        return ResponseEntity.ok(payments);
     }
 
     @PostMapping("/payments")
-    public PaymentList createPayment(
+    public ResponseEntity<PaymentDto> createPayment(
             @PathVariable long orderId,
-            @RequestBody PaymentList newPayment) {
-        Order order = orderService.getOrder(orderId);
-        Payment payment;
-        if (newPayment instanceof CashPaymentList newCashPayment) {
-            payment = updatePayment(new CashPayment(), newCashPayment);
-        } else if (newPayment instanceof TransferencePaymentList newTransferencePayment) {
-            payment = updatePayment(new TransferencePayment(), newTransferencePayment);
-        } else {
-            throw new IllegalArgumentException("Unknown Payment Type");
-        }
-        updatePayment(payment, newPayment);
-        payment.setDate(ZonedDateTime.now());
-        var prevPayments = new HashSet<>(order.getPayments());
-        order.getPayments().add(payment);
-        orderRepository.save(order);
-        payment = order.getPayments()
-                .stream()
-                .filter(p -> !prevPayments.contains(p))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Payment not found"));
-        return mapper.map(payment, PaymentList.class);
+            @RequestBody PaymentDto newPayment) {
+        PaymentDto payment = orderPaymentService.createPayment(orderId, newPayment);
+        return ResponseEntity
+                .created(URI.create("/api/orders/" + orderId + "/payments/" + payment.getId()))
+                .body(payment);
     }
 
     @PutMapping("/payments/{paymentId}")
-    public PaymentList updatePayment(
+    public ResponseEntity<PaymentDto> updatePayment(
             @PathVariable long orderId,
             @PathVariable long paymentId,
-            @RequestBody PaymentList newPayment) {
-        Order order = orderService.getOrder(orderId);
-        Payment payment = order.getPayments()
-                .stream()
-                .filter(p -> paymentId == p.getId())
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Payment not found"));
-        if (newPayment instanceof CashPaymentList newCashPayment
-                && payment instanceof CashPayment cashPayment) {
-            updatePayment(cashPayment, newCashPayment);
-        } else if (newPayment instanceof TransferencePaymentList newTransferencePayment
-                && payment instanceof TransferencePayment transferencePayment) {
-            updatePayment(transferencePayment, newTransferencePayment);
-        }
-        updatePayment(payment, newPayment);
-        orderRepository.save(order);
-        return mapper.map(payment, PaymentList.class);
+            @RequestBody PaymentDto newPayment) {
+        PaymentDto payment = orderPaymentService.updatePayment(orderId, paymentId, newPayment);
+        return ResponseEntity.ok(payment);
     }
-
-    private Payment updatePayment(Payment payment, PaymentList newPayment) {
-        payment.setAmount(newPayment.getAmount());
-        return payment;
-    }
-
-    private Payment updatePayment(TransferencePayment transferencePayment, TransferencePaymentList newPayment) {
-        transferencePayment.setBankAccount(bankAccountRepository.findById(newPayment.getBankAccountId())
-                .orElseThrow(() -> new IllegalArgumentException("Bank Account not found")));
-        return transferencePayment;
-    }
-
-    private Payment updatePayment(CashPayment cashPayment, CashPaymentList newPayment) {
-        cashPayment.setRider(riderRepository.findById(newPayment.getRiderId())
-                .orElseThrow(() -> new IllegalArgumentException("Payment not found")));
-        return cashPayment;
-    }
-
 }
