@@ -1,7 +1,8 @@
 package com.crisado.delivery.controller;
 
 import com.crisado.delivery.model.CookingProduct;
-import com.crisado.delivery.repository.OrderItemRepository;
+import com.crisado.delivery.service.CookingService;
+
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,13 +14,13 @@ import java.util.List;
 @RequestMapping("/api/cooking")
 public class CookingController {
 
-    private final OrderItemRepository orderItemRepository;
+    private final CookingService cookingService;
 
     @GetMapping
     public List<CookingProduct> getProductsToCook(
             @RequestParam ZonedDateTime from,
             @RequestParam ZonedDateTime to) {
-        return orderItemRepository.findAllByDeliveryDate(from, to);
+        return cookingService.getProductsToCook(from, to);
     }
 
 }
