@@ -9,7 +9,7 @@ import lombok.AllArgsConstructor;
 @Controller
 @RequestMapping("/")
 @AllArgsConstructor
-public class AppController {
+public class WebController {
 
     @GetMapping({
             "/",
