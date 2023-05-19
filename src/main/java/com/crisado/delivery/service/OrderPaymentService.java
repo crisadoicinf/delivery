@@ -35,6 +35,12 @@ public class OrderPaymentService {
     private final BankAccountRepository bankAccountRepository;
     private final ModelMapper mapper;
 
+    /**
+     * Retrieves a list of payments associated with a given order.
+     *
+     * @param orderId The ID of the order.
+     * @return A list of payments associated with the specified order.
+     */
     public List<PaymentDto> getPayments(long orderId) {
         return getOrder(orderId)
                 .getPayments()
@@ -43,6 +49,15 @@ public class OrderPaymentService {
                 .collect(toList());
     }
 
+    /**
+     * Creates a new payment for a given order.
+     *
+     * @param orderId    The ID of the order.
+     * @param newPayment The request for the new payment.
+     * @return The created payment.
+     * @throws ArgumentException if the payment type is unknown.
+     * @throws StateException    if the payment could not be created.
+     */
     public PaymentDto createPayment(long orderId, PaymentDto newPayment) {
         Order order = getOrder(orderId);
         Payment payment;
@@ -66,6 +81,17 @@ public class OrderPaymentService {
         return mapper.map(payment, PaymentDto.class);
     }
 
+    /**
+     * Updates an existing payment for a given order.
+     *
+     * @param orderId    The ID of the order.
+     * @param paymentId  The ID of the payment to update.
+     * @param newPayment The request the updated payment.
+     * @return The updated PaymentDto object.
+     * @throws StateException    if the payment is not found or the payment type
+     *                           cannot be changed.
+     * @throws ArgumentException if the payment type is unknown.
+     */
     public PaymentDto updatePayment(long orderId, long paymentId, PaymentDto newPayment) {
         Order order = getOrder(orderId);
         Payment payment = order.getPayments()
