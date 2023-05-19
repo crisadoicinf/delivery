@@ -1,5 +1,12 @@
 package com.crisado.delivery.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -10,14 +17,6 @@ import org.modelmapper.ModelMapper;
 import com.crisado.delivery.dto.BankAccountDto;
 import com.crisado.delivery.model.BankAccount;
 import com.crisado.delivery.repository.BankAccountRepository;
-
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
-
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
 
 @ExtendWith(MockitoExtension.class)
 public class BankServiceTest {
@@ -31,29 +30,16 @@ public class BankServiceTest {
 
     @Test
     void getAllBankAccounts() {
-        var bank1 = BankAccount.builder().build();
-        var bank2 = BankAccount.builder().build();
+        var bankDto1 = new BankAccountDto();
+        var bankDto2 = new BankAccountDto();
 
         when(bankAccountRepository.findAll())
-                .thenReturn(List.of(bank1, bank2));
-        when(mapper.map(eq(bank1), eq(BankAccountDto.class)))
-                .thenReturn(BankAccountDto.builder()
-                        .id(1)
-                        .name("bank1")
-                        .owner("owner1")
-                        .build());
-        when(mapper.map(eq(bank2), eq(BankAccountDto.class)))
-                .thenReturn(BankAccountDto.builder()
-                        .id(2)
-                        .name("bank2")
-                        .owner("owner2")
-                        .build());
+                .thenReturn(List.of(new BankAccount(), new BankAccount()));
+        when(mapper.map(any(BankAccount.class), eq(BankAccountDto.class)))
+                .thenReturn(bankDto1,bankDto2);
 
         assertThat(bankService.getAllBankAccounts())
-                .extracting(BankAccountDto::getId, BankAccountDto::getName, BankAccountDto::getOwner)
-                .containsExactly(
-                        tuple(1, "bank1", "owner1"),
-                        tuple(2, "bank2", "owner2"));
+                .containsExactly(bankDto1, bankDto2);
     }
 
 }

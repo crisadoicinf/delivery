@@ -1,5 +1,6 @@
 package com.crisado.delivery.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 import java.time.ZonedDateTime;
@@ -13,9 +14,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.crisado.delivery.model.CookingProduct;
 import com.crisado.delivery.repository.OrderItemRepository;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
 
 @ExtendWith(MockitoExtension.class)
 public class CookingServiceTest {
@@ -36,9 +34,6 @@ public class CookingServiceTest {
                 .thenReturn(List.of(product1, product2));
 
         assertThat(cookingService.getProductsToCook(from, to))
-                .extracting(CookingProduct::productName, CookingProduct::note, CookingProduct::total)
-                .containsExactly(
-                        tuple("product1", "note1", 1L),
-                        tuple("product2", "note1", 2L));
+                .containsExactly(product1, product2);
     }
 }
