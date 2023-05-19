@@ -1,6 +1,6 @@
 package com.crisado.delivery.controller;
 
-import com.crisado.delivery.dto.OrderListResponse;
+import com.crisado.delivery.dto.OrderSummaryDto;
 import com.crisado.delivery.dto.OrderProductList;
 import com.crisado.delivery.dto.OrderRequest;
 import com.crisado.delivery.dto.OrderResponse;
@@ -37,12 +37,12 @@ public class OrderController {
     }
 
     @GetMapping
-    public List<OrderListResponse> getOrdersBetweenDates(
+    public List<OrderSummaryDto> getOrdersBetweenDates(
             @RequestParam ZonedDateTime from,
             @RequestParam ZonedDateTime to
     ) {
         return orderService.getOrdersBetweenDates(from, to).stream()
-                .map(order -> mapper.map(order, OrderListResponse.class))
+                .map(order -> mapper.map(order, OrderSummaryDto.class))
                 .collect(toList());
     }
 

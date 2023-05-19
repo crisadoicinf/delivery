@@ -11,7 +11,7 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RiderSelectResponse {
+public class RiderDto {
 
 	private int id;
 	private String name;
