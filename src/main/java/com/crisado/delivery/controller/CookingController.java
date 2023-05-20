@@ -4,6 +4,8 @@ import com.crisado.delivery.model.CookingProduct;
 import com.crisado.delivery.service.CookingService;
 
 import lombok.AllArgsConstructor;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.ZonedDateTime;
@@ -17,10 +19,11 @@ public class CookingController {
     private final CookingService cookingService;
 
     @GetMapping
-    public List<CookingProduct> getProductsToCook(
+    public ResponseEntity<List<CookingProduct>> getProductsToCook(
             @RequestParam ZonedDateTime from,
             @RequestParam ZonedDateTime to) {
-        return cookingService.getProductsToCook(from, to);
+        var products = cookingService.getProductsToCook(from, to);
+        return ResponseEntity.ok(products);
     }
 
 }
