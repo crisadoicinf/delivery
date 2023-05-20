@@ -1,15 +1,23 @@
 package com.crisado.delivery.service;
 
-import com.crisado.delivery.dto.OrderRequest;
+import com.crisado.delivery.dto.ProductDto;
+import com.crisado.delivery.exception.StateException;
+import com.crisado.delivery.dto.OrderDtoRequest;
+import com.crisado.delivery.dto.OrderDto;
+import com.crisado.delivery.dto.OrderSummaryDto;
 import com.crisado.delivery.model.*;
 import com.crisado.delivery.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 @Service
 @Transactional
@@ -20,10 +28,11 @@ public class OrderService {
     private final MenuItemRepository menuItemRepository;
     private final ProductRepository productRepository;
     private final RiderRepository riderRepository;
+    private final ModelMapper mapper;
 
     /**
-     * Retrieves a list of orders that have a delivery
-     * date between the specified start and end dates.
+     * Retrieves a list of orders that have a delivery date between the specified
+     * start and end dates.
      *
      * @param from The start date of the date range to search for orders.
      * 
@@ -32,8 +41,9 @@ public class OrderService {
      * @return A list of orders that have a delivery date between the specified
      *         start and end dates.
      */
-    public List<Order> getOrdersBetweenDates(ZonedDateTime from, ZonedDateTime to) {
-        return orderRepository.findAllByDeliveryDateBetween(from, to);
+    public List<OrderSummaryDto> getOrdersBetweenDates(ZonedDateTime from, ZonedDateTime to) {
+        return orderRepository.findAllByDeliveryDateBetween(from, to).stream()
+                .map(order -> mapper.map(order, OrderSummaryDto.class)).collect(toList());
     }
 
     /**
@@ -41,15 +51,14 @@ public class OrderService {
      *
      * @return A list of all products.
      */
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
+    public List<ProductDto> getProducts() {
+        return productRepository.findAll().stream().map(order -> mapper.map(order, ProductDto.class)).collect(toList());
     }
 
     /**
      * Retrieves the total number of orders delivered each day of the specified
      * month and returns it as a map with the day as key and the number of orders as
-     * the value.
-     * Only days with orders are present in the map
+     * the value. Only days with orders are present in the map
      *
      * @param month The month for which to retrieve the daily order count.
      * 
@@ -57,8 +66,7 @@ public class OrderService {
      *         orders delivered on that day.
      */
     public Map<Integer, Long> getDailyAmountOfOrdersByMonth(int month) {
-        return orderRepository.countTotalByDeliveryMonthDay(month)
-                .stream()
+        return orderRepository.countTotalByDeliveryMonthDay(month).stream()
                 .collect(Collectors.toMap(OrdersCountByDay::day, OrdersCountByDay::total));
     }
 
@@ -72,9 +80,13 @@ public class OrderService {
      * @throws IllegalArgumentException if an order with the specified ID is not
      *                                  found.
      */
-    public Order getOrder(long orderId) {
-        return orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+    public OrderDto getOrder(long orderId) {
+        var order = retrieveOrder(orderId);
+        return mapper.map(order, OrderDto.class);
+    }
+
+    private Order retrieveOrder(long orderId) {
+        return orderRepository.findById(orderId).orElseThrow(() -> new StateException("Order not found"));
     }
 
     /**
@@ -85,11 +97,9 @@ public class OrderService {
      * 
      * @return The newly created order.
      */
-    public Order createOrder(OrderRequest orderRequest) {
-        Order order = Order.builder()
-                .items(new HashSet<>())
-                .build();
-        return saveOrder(order, orderRequest);
+    public OrderDto createOrder(OrderDtoRequest orderRequest) {
+        var order = saveOrder(Order.builder().items(new HashSet<>()).build(), orderRequest);
+        return mapper.map(order, OrderDto.class);
     }
 
     /**
@@ -105,12 +115,12 @@ public class OrderService {
      * @throws IllegalArgumentException if an order with the specified ID is not
      *                                  found.
      */
-    public Order updateOrder(long orderId, OrderRequest orderRequest) {
-        Order order = getOrder(orderId);
-        return saveOrder(order, orderRequest);
+    public OrderDto updateOrder(long orderId, OrderDtoRequest orderRequest) {
+        var order = saveOrder(retrieveOrder(orderId), orderRequest);
+        return mapper.map(order, OrderDto.class);
     }
 
-    private Order saveOrder(Order order, OrderRequest orderRequest) {
+    private Order saveOrder(Order order, OrderDtoRequest orderRequest) {
         buildOrder(orderRequest, order);
         buildOrderItems(order, orderRequest.getItems());
         orderRepository.save(order);
@@ -126,7 +136,7 @@ public class OrderService {
      *                                  found.
      */
     public void deleteOrder(Long orderId) {
-        Order order = getOrder(orderId);
+        Order order = retrieveOrder(orderId);
         orderRepository.delete(order);
     }
 
@@ -142,21 +152,18 @@ public class OrderService {
      * @throws IllegalArgumentException if the provided rider ID in the order
      *                                  request does not match an existing rider.
      */
-    private void buildOrder(OrderRequest orderRequest, Order order) {
+    private void buildOrder(OrderDtoRequest orderRequest, Order order) {
         order.setDate(ZonedDateTime.now());
         order.setCustomerName(orderRequest.getCustomerName());
         order.setCustomerPhone(orderRequest.getCustomerPhone());
-        OrderDelivery delivery = Optional.ofNullable(order.getDelivery())
-                .orElse(new OrderDelivery());
+        OrderDelivery delivery = Optional.ofNullable(order.getDelivery()).orElse(new OrderDelivery());
         delivery.setOrder(order);
         delivery.setAddress(orderRequest.getDeliveryAddress());
         delivery.setDate(orderRequest.getDeliveryDate());
         delivery.setDateRange(orderRequest.getDeliveryDateRange());
         delivery.setPrice(orderRequest.getDeliveryPrice());
-        delivery.setRider(Optional.ofNullable(orderRequest.getDeliveryRiderId())
-                .map(riderId -> riderRepository.findById(riderId)
-                        .orElseThrow(() -> new IllegalArgumentException("Rider not found")))
-                .orElse(null));
+        delivery.setRider(Optional.ofNullable(orderRequest.getDeliveryRiderId()).map(riderId -> riderRepository
+                .findById(riderId).orElseThrow(() -> new IllegalArgumentException("Rider not found"))).orElse(null));
         order.setDelivery(delivery);
         order.setDiscount(orderRequest.getDiscount());
         order.setNote(orderRequest.getNote());
@@ -172,17 +179,15 @@ public class OrderService {
      * @throws IllegalArgumentException if a product for an order item cannot be
      *                                  found.
      */
-    private void buildOrderItems(Order order, List<OrderRequest.OrderItem> itemsRequest) {
+    private void buildOrderItems(Order order, List<OrderDtoRequest.OrderItem> itemsRequest) {
         Set<OrderItem> orderItems = new HashSet<>(order.getItems());
         order.getItems().clear();
         if (itemsRequest != null) {
             int position = 0;
-            for (OrderRequest.OrderItem orderItemRequest : itemsRequest) {
-                OrderItem orderItem = orderItems
-                        .stream()
+            for (OrderDtoRequest.OrderItem orderItemRequest : itemsRequest) {
+                OrderItem orderItem = orderItems.stream()
                         .filter(oi -> orderItemRequest.getId() != null && orderItemRequest.getId().equals(oi.getId()))
-                        .findFirst()
-                        .orElse(new OrderItem());
+                        .findFirst().orElse(new OrderItem());
                 Product product = menuItemRepository.findById(orderItemRequest.getProductId())
                         .orElseThrow(() -> new IllegalArgumentException("Product not found"));
                 orderItem.setOrder(order);

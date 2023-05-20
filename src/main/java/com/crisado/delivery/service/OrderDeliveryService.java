@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.crisado.delivery.dto.OrderSummaryDto;
 import com.crisado.delivery.dto.RiderDto;
+import com.crisado.delivery.exception.StateException;
 import com.crisado.delivery.model.OrderDelivery;
 import com.crisado.delivery.repository.OrderDeliveryRepository;
 import com.crisado.delivery.repository.OrderRepository;
@@ -23,7 +24,6 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class OrderDeliveryService {
 
-	private final OrderService orderService;
 	private final OrderRepository orderRepository;
 	private final OrderDeliveryRepository deliveryRepository;
 	private final RiderRepository riderRepository;
@@ -54,7 +54,9 @@ public class OrderDeliveryService {
 	 * @param delivered The delivery status to set for the order.
 	 */
 	public void setOrderDelivered(long orderId, boolean delivered) {
-		OrderDelivery delivery = orderService.getOrder(orderId).getDelivery();
+		OrderDelivery delivery = orderRepository.findById(orderId)
+				.orElseThrow(() -> new StateException("Order not found"))
+				.getDelivery();
 		delivery.setDelivered(delivered);
 		deliveryRepository.save(delivery);
 	}
