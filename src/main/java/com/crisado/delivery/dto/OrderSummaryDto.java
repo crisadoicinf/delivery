@@ -10,6 +10,7 @@ import java.time.ZonedDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderSummaryDto {
+
     private long id;
     private String customerName;
     private String customerPhone;

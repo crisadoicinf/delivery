@@ -14,7 +14,6 @@ import java.util.List;
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
     List<Order> findAllByDeliveryDateBetween(ZonedDateTime from, ZonedDateTime to);
-    
 
     @Query(value = """
              select o, d, r
@@ -34,6 +33,5 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
              order by day(o.delivery.date) asc
             """)
     List<OrdersCountByDay> countTotalByDeliveryMonthDay(int month);
-
 
 }

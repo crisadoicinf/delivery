@@ -1,20 +1,28 @@
 package com.crisado.delivery.controller;
 
-import com.crisado.delivery.dto.OrderSummaryDto;
-import com.crisado.delivery.dto.OrderProductList;
-import com.crisado.delivery.dto.OrderRequest;
-import com.crisado.delivery.dto.OrderResponse;
-import com.crisado.delivery.model.Order;
-import com.crisado.delivery.service.OrderService;
-import lombok.AllArgsConstructor;
-import org.modelmapper.ModelMapper;
-import org.springframework.web.bind.annotation.*;
-
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 
-import static java.util.stream.Collectors.toList;
+import org.modelmapper.ModelMapper;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.crisado.delivery.dto.OrderDto;
+import com.crisado.delivery.dto.OrderDtoRequest;
+import com.crisado.delivery.dto.OrderSummaryDto;
+import com.crisado.delivery.dto.ProductDto;
+import com.crisado.delivery.service.OrderService;
+
+import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 @RestController
@@ -25,10 +33,9 @@ public class OrderController {
     private final ModelMapper mapper;
 
     @GetMapping("/products")
-    public List<OrderProductList> getAllProducts() {
-        return orderService.getAllProducts().stream()
-                .map(order -> mapper.map(order, OrderProductList.class))
-                .collect(toList());
+    public ResponseEntity<List<ProductDto>> getProducts() {
+        var orders = orderService.getProducts();
+        return ResponseEntity.ok(orders);
     }
 
     @GetMapping("/count")
@@ -37,37 +44,35 @@ public class OrderController {
     }
 
     @GetMapping
-    public List<OrderSummaryDto> getOrdersBetweenDates(
+    public ResponseEntity<List<OrderSummaryDto>> getOrdersBetweenDates(
             @RequestParam ZonedDateTime from,
-            @RequestParam ZonedDateTime to
-    ) {
-        return orderService.getOrdersBetweenDates(from, to).stream()
-                .map(order -> mapper.map(order, OrderSummaryDto.class))
-                .collect(toList());
+            @RequestParam ZonedDateTime to) {
+        var orders = orderService.getOrdersBetweenDates(from, to);
+        return ResponseEntity.ok(orders);
     }
 
     @GetMapping("/{id}")
-    public OrderResponse getOrder(@PathVariable long id) {
-        Order order = orderService.getOrder(id);
-        return mapper.map(order, OrderResponse.class);
+    public ResponseEntity<OrderDto> getOrder(@PathVariable long id) {
+        var order = orderService.getOrder(id);
+        return ResponseEntity.ok(order);
     }
 
     @PostMapping
-    public OrderResponse createOrder(@RequestBody OrderRequest orderRequest) {
-        Order order = orderService.createOrder(orderRequest);
-        return mapper.map(order, OrderResponse.class);
+    public ResponseEntity<OrderDto> createOrder(@RequestBody OrderDtoRequest orderRequest) {
+        var order = orderService.createOrder(orderRequest);
+        return ResponseEntity.ok(order);
     }
 
     @PutMapping("/{id}")
-    public OrderResponse updateOrder(@PathVariable long id, @RequestBody OrderRequest orderRequest) {
-        Order order = orderService.updateOrder(id, orderRequest);
-        return mapper.map(order, OrderResponse.class);
+    public ResponseEntity<OrderDto> updateOrder(@PathVariable long id, @RequestBody OrderDtoRequest orderRequest) {
+        var order = orderService.updateOrder(id, orderRequest);
+        return ResponseEntity.ok(order);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteOrder(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteOrder(@PathVariable Long id) {
         orderService.deleteOrder(id);
+        return ResponseEntity.noContent().build();
     }
-
 
 }

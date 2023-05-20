@@ -1,18 +1,16 @@
 package com.crisado.delivery.controller;
 
-import com.crisado.delivery.dto.BankAccountDto;
-import com.crisado.delivery.model.BankAccount;
-import com.crisado.delivery.repository.BankAccountRepository;
-import com.crisado.delivery.service.BankService;
-
-import lombok.AllArgsConstructor;
+import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import com.crisado.delivery.dto.BankAccountDto;
+import com.crisado.delivery.service.BankService;
+
+import lombok.AllArgsConstructor;
 
 @RestController
 @RequestMapping("/api/bank-accounts")

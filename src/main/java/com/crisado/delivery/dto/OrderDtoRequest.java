@@ -32,6 +32,7 @@ public class OrderDtoRequest {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class OrderItem {
+
         private Long id;
         private Integer productId;
         private int quantity;

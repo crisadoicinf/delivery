@@ -1,6 +1,5 @@
 package com.crisado.delivery.model;
 
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;

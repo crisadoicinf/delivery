@@ -8,5 +8,4 @@ import com.crisado.delivery.model.OrderDelivery;
 @Repository
 public interface OrderDeliveryRepository extends JpaRepository<OrderDelivery, Long> {
 
-
 }

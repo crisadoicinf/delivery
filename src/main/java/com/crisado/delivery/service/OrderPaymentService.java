@@ -52,11 +52,11 @@ public class OrderPaymentService {
     /**
      * Creates a new payment for a given order.
      *
-     * @param orderId    The ID of the order.
+     * @param orderId The ID of the order.
      * @param newPayment The request for the new payment.
      * @return The created payment.
      * @throws ArgumentException if the payment type is unknown.
-     * @throws StateException    if the payment could not be created.
+     * @throws StateException if the payment could not be created.
      */
     public PaymentDto createPayment(long orderId, PaymentDto newPayment) {
         Order order = getOrder(orderId);
@@ -84,12 +84,12 @@ public class OrderPaymentService {
     /**
      * Updates an existing payment for a given order.
      *
-     * @param orderId    The ID of the order.
-     * @param paymentId  The ID of the payment to update.
+     * @param orderId The ID of the order.
+     * @param paymentId The ID of the payment to update.
      * @param newPayment The request the updated payment.
      * @return The updated PaymentDto object.
-     * @throws StateException    if the payment is not found or the payment type
-     *                           cannot be changed.
+     * @throws StateException if the payment is not found or the payment type
+     * cannot be changed.
      * @throws ArgumentException if the payment type is unknown.
      */
     public PaymentDto updatePayment(long orderId, long paymentId, PaymentDto newPayment) {
@@ -100,12 +100,14 @@ public class OrderPaymentService {
                 .findFirst()
                 .orElseThrow(() -> new StateException("Payment not found"));
         if (newPayment instanceof CashPaymentDto newCashPayment) {
-            if (!(payment instanceof CashPayment cashPayment))
+            if (!(payment instanceof CashPayment cashPayment)) {
                 throw new StateException("Payment Type can not be changed");
+            }
             updateCashPayment(cashPayment, newCashPayment);
         } else if (newPayment instanceof TransferencePaymentDto newTransferencePayment) {
-            if (!(payment instanceof TransferencePayment transferencePayment))
+            if (!(payment instanceof TransferencePayment transferencePayment)) {
                 throw new StateException("Payment Type can not be changed");
+            }
             updateTransferencePayment(transferencePayment, newTransferencePayment);
         } else {
             throw new ArgumentException("Unknown Payment Type");

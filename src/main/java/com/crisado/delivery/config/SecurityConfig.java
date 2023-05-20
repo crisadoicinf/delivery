@@ -24,19 +24,21 @@ import lombok.Setter;
 @ConfigurationProperties("security")
 @Setter
 public class SecurityConfig {
-	
-	private List<UserProp> users;
+
+    private List<UserProp> users;
 
     @Bean
     public UserDetailsManager userDetailsService(PasswordEncoder encoder) {
-    	if (users == null) return new InMemoryUserDetailsManager();
+        if (users == null) {
+            return new InMemoryUserDetailsManager();
+        }
         return new InMemoryUserDetailsManager(users.stream()
-        		.map(prop -> User.builder()
-        				.username(prop.username())
-        				.password(encoder.encode(prop.password()))
-        				.roles("ADMIN")
-        				.build())
-        		.collect(Collectors.toList()));
+                .map(prop -> User.builder()
+                .username(prop.username())
+                .password(encoder.encode(prop.password()))
+                .roles("ADMIN")
+                .build())
+                .collect(Collectors.toList()));
     }
 
     @Bean
@@ -56,6 +58,8 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    
-    public static record UserProp(String username, String password) {};
+    public static record UserProp(String username, String password) {
+
+    }
+
 }
