@@ -1,6 +1,5 @@
 package com.crisado.delivery.service;
 
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.List;
@@ -25,7 +24,6 @@ import com.crisado.delivery.model.OrderItem;
 import com.crisado.delivery.model.OrdersCountByDay;
 import com.crisado.delivery.model.Product;
 import com.crisado.delivery.model.Rider;
-import com.crisado.delivery.repository.MenuItemRepository;
 import com.crisado.delivery.repository.OrderItemRepository;
 import com.crisado.delivery.repository.OrderRepository;
 import com.crisado.delivery.repository.ProductRepository;
@@ -47,8 +45,6 @@ public class OrderServiceTest {
     private OrderRepository orderRepository;
     @Mock
     private OrderItemRepository orderItemRepository;
-    @Mock
-    private MenuItemRepository menuItemRepository;
     @Mock
     private ProductRepository productRepository;
     @Mock
@@ -88,7 +84,7 @@ public class OrderServiceTest {
 
         when(riderRepository.findById(request.getDeliveryRiderId()))
                 .thenReturn(Optional.of(rider));
-        when(menuItemRepository.findById(request.getItems().get(0).getProductId()))
+        when(productRepository.findById(request.getItems().get(0).getProductId()))
                 .thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.createOrder(request))
@@ -129,9 +125,9 @@ public class OrderServiceTest {
 
         when(riderRepository.findById(request.getDeliveryRiderId()))
                 .thenReturn(Optional.of(rider));
-        when(menuItemRepository.findById(1))
+        when(productRepository.findById(1))
                 .thenReturn(Optional.of(product1));
-        when(menuItemRepository.findById(2))
+        when(productRepository.findById(2))
                 .thenReturn(Optional.of(product2));
         when(mapper.map(any(Order.class), eq(OrderDto.class)))
                 .thenReturn(orderDto);
@@ -356,7 +352,7 @@ public class OrderServiceTest {
                 .thenReturn(Optional.of(order));
         when(riderRepository.findById(request.getDeliveryRiderId()))
                 .thenReturn(Optional.of(rider));
-        when(menuItemRepository.findById(request.getItems().get(0).getProductId()))
+        when(productRepository.findById(request.getItems().get(0).getProductId()))
                 .thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.updateOrder(orderId, request))
@@ -443,9 +439,9 @@ public class OrderServiceTest {
                 .thenReturn(Optional.of(order));
         when(riderRepository.findById(request.getDeliveryRiderId()))
                 .thenReturn(Optional.of(rider));
-        when(menuItemRepository.findById(1))
+        when(productRepository.findById(1))
                 .thenReturn(Optional.of(product1));
-        when(menuItemRepository.findById(2))
+        when(productRepository.findById(2))
                 .thenReturn(Optional.of(product2));
         when(mapper.map(eq(order), eq(OrderDto.class)))
                 .thenReturn(orderDto);

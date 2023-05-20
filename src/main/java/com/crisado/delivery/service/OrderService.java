@@ -25,7 +25,6 @@ import static java.util.stream.Collectors.toList;
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final MenuItemRepository menuItemRepository;
     private final ProductRepository productRepository;
     private final RiderRepository riderRepository;
     private final ModelMapper mapper;
@@ -188,7 +187,7 @@ public class OrderService {
                 OrderItem orderItem = orderItems.stream()
                         .filter(oi -> orderItemRequest.getId() != null && orderItemRequest.getId().equals(oi.getId()))
                         .findFirst().orElse(new OrderItem());
-                Product product = menuItemRepository.findById(orderItemRequest.getProductId())
+                Product product = productRepository.findById(orderItemRequest.getProductId())
                         .orElseThrow(() -> new IllegalArgumentException("Product not found"));
                 orderItem.setOrder(order);
                 orderItem.setProduct(product);
