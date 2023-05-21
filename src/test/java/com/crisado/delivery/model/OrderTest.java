@@ -10,15 +10,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class OrderTest {
 
     @Test
-    public void getItemsPriceZeroWhenNoItems() {
+    public void getItemsTotalPriceZeroWhenNoItems() {
         var order = new Order();
 
-        assertThat(order.getItemsPrice())
+        assertThat(order.getItemsTotalPrice())
                 .isEqualTo(0D);
     }
 
     @Test
-    public void getItemsPrice() {
+    public void getItemsTotalPrice() {
         var order = Order.builder()
                 .items(Set.of(
                         OrderItem.builder().totalPrice(1D).build(),
@@ -26,28 +26,29 @@ public class OrderTest {
                 ))
                 .build();
 
-        assertThat(order.getItemsPrice())
+        assertThat(order.getItemsTotalPrice())
                 .isEqualTo(3D);
     }
 
     @Test
-    public void getDeliveryPriceZeroWhenNoDelivery() {
+    public void getPaymentsTotalAmountZeroWhenNoPayments() {
         var order = new Order();
 
-        assertThat(order.getDeliveryPrice())
+        assertThat(order.getPaymentsTotalAmount())
                 .isEqualTo(0D);
     }
 
     @Test
-    public void getDeliveryPrice() {
+    public void getPaymentsTotalAmountWhenNoPayments() {
         var order = Order.builder()
-                .delivery(OrderDelivery.builder()
-                        .price(1.5D)
-                        .build())
+                .payments(Set.of(
+                        CashPayment.builder().amount(10D).build(),
+                        TransferencePayment.builder().amount(5D).build()
+                ))
                 .build();
 
-        assertThat(order.getDeliveryPrice())
-                .isEqualTo(1.5D);
+        assertThat(order.getPaymentsTotalAmount())
+                .isEqualTo(15D);
     }
 
     @Test
@@ -65,6 +66,20 @@ public class OrderTest {
 
         assertThat(order.getTotalPrice())
                 .isEqualTo(0D);
+    }
+
+    @Test
+    public void getTotalPriceWhenNoDelivery() {
+        var order = Order.builder()
+                .discount(2D)
+                .items(Set.of(
+                        OrderItem.builder().totalPrice(10D).build(),
+                        OrderItem.builder().totalPrice(20D).build()
+                ))
+                .build();
+
+        assertThat(order.getTotalPrice())
+                .isEqualTo(28D);
     }
 
     @Test
@@ -117,15 +132,6 @@ public class OrderTest {
     }
 
     @Test
-    public void isPaidFalseWhenNoPayments() {
-        var order = new Order();
-
-        assertThat(order.isPaid())
-                .isFalse();
-
-    }
-
-    @Test
     public void isPaidFalseWhenPaymentsAreLessThanTotalPrice() {
         var order = Order.builder()
                 .discount(2D)
@@ -147,7 +153,7 @@ public class OrderTest {
     }
 
     @Test
-    public void isPaidFalseWhenPaymentsMatchTotalPrice() {
+    public void isPaidTrueWhenPaymentsMatchTotalPrice() {
         var order = Order.builder()
                 .discount(2D)
                 .items(Set.of(

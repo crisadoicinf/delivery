@@ -66,7 +66,7 @@ public class Order {
     @OrderBy("date asc")
     private Set<Payment> payments;
 
-    public double getItemsPrice() {
+    public double getItemsTotalPrice() {
         double itemsPrice = 0;
         if (items != null) {
             itemsPrice = items
@@ -77,17 +77,22 @@ public class Order {
         return itemsPrice;
     }
 
-    public double getDeliveryPrice() {
+    public double getPaymentsTotalAmount() {
+        if (payments == null) {
+            return 0D;
+        }
+        return payments
+                .stream()
+                .map(Payment::getAmount)
+                .reduce(0d, Double::sum);
+    }
+
+    public double getTotalPrice() {
+        double itemsPrice = getItemsTotalPrice();
         double deliveryPrice = 0;
         if (delivery != null) {
             deliveryPrice = delivery.getPrice();
         }
-        return deliveryPrice;
-    }
-
-    public double getTotalPrice() {
-        double itemsPrice = getItemsPrice();
-        double deliveryPrice = getDeliveryPrice();
         return Math.max(0D, itemsPrice + deliveryPrice - getDiscount());
     }
 
@@ -99,15 +104,7 @@ public class Order {
     }
 
     public boolean isPaid() {
-        if (payments == null) {
-            return false;
-        }
-        double totalPrice = getTotalPrice();
-        double amountPaid = payments
-                .stream()
-                .map(Payment::getAmount)
-                .reduce(0d, Double::sum);
-        return amountPaid >= totalPrice;
+        return getPaymentsTotalAmount() >= getTotalPrice();
     }
 
 }
