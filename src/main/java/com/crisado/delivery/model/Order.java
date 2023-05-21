@@ -66,23 +66,48 @@ public class Order {
     @OrderBy("date asc")
     private Set<Payment> payments;
 
-    public boolean isPaid() {
-        double totalPrice = getTotalPrice();
-        if (totalPrice == 0 || payments.isEmpty()) {
-            return false;
+    public double getItemsPrice() {
+        double itemsPrice = 0;
+        if (items != null) {
+            itemsPrice = items
+                    .stream()
+                    .map(OrderItem::getTotalPrice)
+                    .reduce(0d, Double::sum);
         }
-        double amountPaid = payments.stream()
-                .map(Payment::getAmount)
-                .reduce(0d, Double::sum);
-        return amountPaid >= totalPrice;
+        return itemsPrice;
+    }
+
+    public double getDeliveryPrice() {
+        double deliveryPrice = 0;
+        if (delivery != null) {
+            deliveryPrice = delivery.getPrice();
+        }
+        return deliveryPrice;
     }
 
     public double getTotalPrice() {
-        double itemsPrice = getItems().stream()
-                .map(OrderItem::getTotalPrice)
+        double itemsPrice = getItemsPrice();
+        double deliveryPrice = getDeliveryPrice();
+        return Math.max(0D, itemsPrice + deliveryPrice - getDiscount());
+    }
+
+    public boolean isDelivered() {
+        if (delivery == null) {
+            return false;
+        }
+        return delivery.isDelivered();
+    }
+
+    public boolean isPaid() {
+        if (payments == null) {
+            return false;
+        }
+        double totalPrice = getTotalPrice();
+        double amountPaid = payments
+                .stream()
+                .map(Payment::getAmount)
                 .reduce(0d, Double::sum);
-        double deliveryPrice = getDelivery().getPrice();
-        return itemsPrice + deliveryPrice - getDiscount();
+        return amountPaid >= totalPrice;
     }
 
 }
