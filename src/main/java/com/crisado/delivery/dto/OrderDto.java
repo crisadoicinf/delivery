@@ -25,6 +25,8 @@ public class OrderDto {
     private boolean delivered;
     private boolean paid;
     private double discount;
+    private double ItemsTotalPrice;
+    private double PaymentsTotalAmount;
     private double totalPrice;
     private List<OrderItem> items;
 
