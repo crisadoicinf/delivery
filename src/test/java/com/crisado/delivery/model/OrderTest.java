@@ -10,6 +10,27 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class OrderTest {
 
     @Test
+    public void getTotalItemsZeroWhenNoItems() {
+        var order = new Order();
+
+        assertThat(order.getTotalItems())
+                .isEqualTo(0);
+    }
+
+    @Test
+    public void getTotalItems() {
+        var order = Order.builder()
+                .items(Set.of(
+                        OrderItem.builder().quantity(1).build(),
+                        OrderItem.builder().quantity(2).build()
+                ))
+                .build();
+
+        assertThat(order.getTotalItems())
+                .isEqualTo(3);
+    }
+
+    @Test
     public void getItemsTotalPriceZeroWhenNoItems() {
         var order = new Order();
 
@@ -172,5 +193,5 @@ public class OrderTest {
         assertThat(order.isPaid())
                 .isTrue();
     }
-    
+
 }
