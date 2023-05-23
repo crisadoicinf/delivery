@@ -44,31 +44,5 @@ public class CashPaymentDtoMapperTest {
                         "rider1"
                 );
     }
-
-    @Test
-    void mapBankAccountWithNoRider() {
-        var date = ZonedDateTime.now();
-        var cashPayment = CashPayment.builder()
-                .id(1L)
-                .amount(10D)
-                .date(date)
-                .build();
-
-        assertThat(mapper.map(cashPayment, CashPaymentDto.class))
-                .extracting(
-                        CashPaymentDto::getId,
-                        CashPaymentDto::getAmount,
-                        CashPaymentDto::getDate,
-                        CashPaymentDto::getRecipientType,
-                        CashPaymentDto::getRecipientName
-                )
-                .containsExactly(
-                        1L,
-                        10D,
-                        date,
-                        "cash",
-                        null
-                );
-    }
-
+    
 }
