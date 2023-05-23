@@ -65,6 +65,17 @@ public class Order {
     @JoinTable(name = "order_payment", joinColumns = @JoinColumn(name = "order_id"), inverseJoinColumns = @JoinColumn(name = "payment_id"))
     @OrderBy("date asc")
     private Set<Payment> payments;
+    
+    public int getTotalItems(){
+        int totalItems = 0;
+        if (items != null) {
+            totalItems = items
+                    .stream()
+                    .map(OrderItem::getQuantity)
+                    .reduce(0, Integer::sum);
+        }
+        return totalItems;
+    }
 
     public double getItemsTotalPrice() {
         double itemsPrice = 0;

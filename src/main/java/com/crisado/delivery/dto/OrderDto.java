@@ -40,6 +40,7 @@ public class OrderDto {
 
         private long id;
         private int productId;
+        private int position;
         private int quantity;
         private double unitPrice;
         private double totalPrice;

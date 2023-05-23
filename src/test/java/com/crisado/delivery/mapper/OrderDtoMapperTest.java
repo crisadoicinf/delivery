@@ -16,6 +16,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.groups.Tuple.tuple;
 
 @ExtendWith(MockitoExtension.class)
 public class OrderDtoMapperTest {
@@ -76,7 +77,8 @@ public class OrderDtoMapperTest {
                 ))
                 .build();
 
-        assertThat(mapper.map(order, OrderDto.class))
+        var orderDto = mapper.map(order, OrderDto.class);
+        assertThat(orderDto)
                 .extracting(
                         OrderDto::getId,
                         OrderDto::getCustomerName,
@@ -107,6 +109,37 @@ public class OrderDtoMapperTest {
                         39.5D,
                         39.5D
                 );
+        assertThat(orderDto.getItems())
+                .extracting(
+                        OrderDto.OrderItem::getId,
+                        OrderDto.OrderItem::getProductId,
+                        OrderDto.OrderItem::getPosition,
+                        OrderDto.OrderItem::getQuantity,
+                        OrderDto.OrderItem::getUnitPrice,
+                        OrderDto.OrderItem::getTotalPrice,
+                        OrderDto.OrderItem::getNote
+                )
+                .containsExactlyInAnyOrder(
+                        tuple(
+                                1L,
+                                product1.getId(),
+                                0,
+                                2,
+                                product1.getPrice(),
+                                2 * product1.getPrice(),
+                                "note1"
+                        ),
+                        tuple(
+                                2L,
+                                product2.getId(),
+                                1,
+                                1,
+                                product2.getPrice(),
+                                1 * product2.getPrice(),
+                                "note2"
+                        )
+                );
+
     }
 
 }
