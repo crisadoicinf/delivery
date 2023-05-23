@@ -4,6 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.util.Optional;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,11 +26,18 @@ public class TransferencePayment extends Payment {
 
     @Override
     public String getRecipientName() {
+        if (bankAccount == null) {
+            return null;
+        }
         return bankAccount.getOwner();
     }
 
     @Override
     public String getRecipientType() {
-        return "transference - " + bankAccount.getName();
+        String bankName = "Unknown";
+        if (bankAccount != null && bankAccount.getName() != null) {
+            bankName = bankAccount.getName();
+        }
+        return "transference - " + bankName;
     }
 }

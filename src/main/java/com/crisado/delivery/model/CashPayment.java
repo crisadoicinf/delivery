@@ -25,6 +25,9 @@ public class CashPayment extends Payment {
 
     @Override
     public String getRecipientName() {
+        if (rider == null) {
+            return null;
+        }
         return rider.getName();
     }
 
