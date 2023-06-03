@@ -311,7 +311,7 @@
 
 	<PromptModal ref="promptModal" />
 	<ConfirmModal ref="confirmModal" />
-	<PaymentsModal ref="paymentModal"
+	<PaymentsModal v-if="orderId" ref="paymentModal"
 				   :orderId="orderId"
 				   :totalAmount="computedTotalPrice" />
 </div>
