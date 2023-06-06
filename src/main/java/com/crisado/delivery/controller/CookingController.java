@@ -1,5 +1,6 @@
 package com.crisado.delivery.controller;
 
+import com.crisado.delivery.dto.DateRangeDto;
 import com.crisado.delivery.model.CookingProduct;
 import com.crisado.delivery.service.CookingService;
 
@@ -8,7 +9,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.ZonedDateTime;
 import java.util.List;
 
 @AllArgsConstructor
@@ -20,9 +20,8 @@ public class CookingController {
 
     @GetMapping
     public ResponseEntity<List<CookingProduct>> getProductsToCook(
-            @RequestParam ZonedDateTime from,
-            @RequestParam ZonedDateTime to) {
-        var products = cookingService.getProductsToCook(from, to);
+            @ModelAttribute DateRangeDto range) {
+        var products = cookingService.getProductsToCook(range);
         return ResponseEntity.ok(products);
     }
 
