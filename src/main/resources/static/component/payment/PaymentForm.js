@@ -5,7 +5,7 @@ const template = await axios.get(import.meta.url.replace(/\.js$/, ".html"))
 
 const riders = await axios.get('/api/delivery/riders')
 	.then(response => response.data)
-const bankAccounts = await axios.get('/api/bank-accounts')
+const bankAccounts = await axios.get('/api/orders/bank-accounts')
 	.then(response => response.data)
 
 export default {

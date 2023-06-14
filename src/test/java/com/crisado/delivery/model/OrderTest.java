@@ -4,18 +4,18 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class OrderTest {
+class OrderTest {
 
     @Test
-    public void getTotalItemsZeroWhenNoItems() {
+    void getTotalItemsZeroWhenNoItems() {
         var order = new Order();
 
         assertThat(order.getTotalItems())
-                .isEqualTo(0);
+                .isZero();
     }
 
     @Test
-    public void getTotalItems() {
+    void getTotalItems() {
         var order = Order.builder()
                 .items(Set.of(
                         OrderItem.builder().quantity(1).build(),
@@ -28,15 +28,15 @@ public class OrderTest {
     }
 
     @Test
-    public void getItemsTotalPriceZeroWhenNoItems() {
+    void getItemsTotalPriceZeroWhenNoItems() {
         var order = new Order();
 
         assertThat(order.getItemsTotalPrice())
-                .isEqualTo(0D);
+                .isZero();
     }
 
     @Test
-    public void getItemsTotalPrice() {
+    void getItemsTotalPrice() {
         var order = Order.builder()
                 .items(Set.of(
                         OrderItem.builder().totalPrice(1D).build(),
@@ -49,7 +49,7 @@ public class OrderTest {
     }
 
     @Test
-    public void getPaymentsTotalAmountZeroWhenNoPayments() {
+    void getPaymentsTotalAmountZeroWhenNoPayments() {
         var order = new Order();
 
         assertThat(order.getPaymentsTotalAmount())
@@ -57,7 +57,7 @@ public class OrderTest {
     }
 
     @Test
-    public void getPaymentsTotalAmountWhenNoPayments() {
+    void getPaymentsTotalAmountWhenNoPayments() {
         var order = Order.builder()
                 .payments(Set.of(
                         CashPayment.builder().amount(10D).build(),
@@ -70,7 +70,7 @@ public class OrderTest {
     }
 
     @Test
-    public void getTotalPriceZeroWhenDiscountBiggerThanItemsAndDeliveryPrice() {
+    void getTotalPriceZeroWhenDiscountBiggerThanItemsAndDeliveryPrice() {
         var order = Order.builder()
                 .discount(10D)
                 .items(Set.of(
@@ -87,7 +87,7 @@ public class OrderTest {
     }
 
     @Test
-    public void getTotalPriceWhenNoDelivery() {
+    void getTotalPriceWhenNoDelivery() {
         var order = Order.builder()
                 .discount(2D)
                 .items(Set.of(
@@ -101,7 +101,7 @@ public class OrderTest {
     }
 
     @Test
-    public void getTotalPrice() {
+    void getTotalPrice() {
         var order = Order.builder()
                 .discount(2D)
                 .items(Set.of(
@@ -118,7 +118,7 @@ public class OrderTest {
     }
 
     @Test
-    public void isDeliveredFalseWhenNoDelivery() {
+    void isDeliveredFalseWhenNoDelivery() {
         var order = new Order();
 
         assertThat(order.isDelivered())
@@ -126,7 +126,7 @@ public class OrderTest {
     }
 
     @Test
-    public void isDeliveredFalseWhenIsUndelivered() {
+    void isDeliveredFalseWhenIsUndelivered() {
         var order = Order.builder()
                 .delivery(OrderDelivery.builder()
                         .delivered(false)
@@ -138,7 +138,7 @@ public class OrderTest {
     }
 
     @Test
-    public void isDeliveredFalseWhenIsDelivered() {
+    void isDeliveredFalseWhenIsDelivered() {
         var order = Order.builder()
                 .delivery(OrderDelivery.builder()
                         .delivered(true)
@@ -150,7 +150,7 @@ public class OrderTest {
     }
 
     @Test
-    public void isPaidFalseWhenPaymentsAreLessThanTotalPrice() {
+    void isPaidFalseWhenPaymentsAreLessThanTotalPrice() {
         var order = Order.builder()
                 .discount(2D)
                 .items(Set.of(
@@ -171,7 +171,7 @@ public class OrderTest {
     }
 
     @Test
-    public void isPaidTrueWhenPaymentsMatchTotalPrice() {
+    void isPaidTrueWhenPaymentsMatchTotalPrice() {
         var order = Order.builder()
                 .discount(2D)
                 .items(Set.of(

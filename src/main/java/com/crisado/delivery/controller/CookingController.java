@@ -1,7 +1,7 @@
 package com.crisado.delivery.controller;
 
 import com.crisado.delivery.dto.DateRangeDto;
-import com.crisado.delivery.model.CookingProduct;
+import com.crisado.delivery.model.OrderItemQuantity;
 import com.crisado.delivery.service.CookingService;
 
 import lombok.AllArgsConstructor;
@@ -19,9 +19,8 @@ public class CookingController {
     private final CookingService cookingService;
 
     @GetMapping
-    public ResponseEntity<List<CookingProduct>> getProductsToCook(
-            @ModelAttribute DateRangeDto range) {
-        var products = cookingService.getProductsToCook(range);
+    public ResponseEntity<List<OrderItemQuantity>> getProductsToCook(@ModelAttribute DateRangeDto range) {
+        var products = cookingService.getProductsToCookByDateRange(range);
         return ResponseEntity.ok(products);
     }
 

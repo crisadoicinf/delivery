@@ -17,7 +17,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @ExtendWith(MockitoExtension.class)
-public class ValidatorsTest {
+class ValidatorsTest {
 
     @Mock
     private Validator validator;
@@ -25,7 +25,7 @@ public class ValidatorsTest {
     private Validators validatorUtil;
 
     @Test
-    public void validateDoNotThrowExceptionIfThereIsNoError() {
+    void validateDoNotThrowExceptionIfThereIsNoError() {
         Set<ConstraintViolation<Object>> errors = Set.of();
 
         when(validator.validate(any(), any()))
@@ -35,22 +35,22 @@ public class ValidatorsTest {
     }
 
     @Test
-    public void validateThrowsExceptionIfObjectIsNull() {
+    void validateThrowsExceptionIfObjectIsNull() {
         var errors = Set.of(newConstraint());
 
         when(validator.validate(any(), any()))
                 .thenReturn(errors);
 
-        assertThatThrownBy(() -> validatorUtil.validate("message", null))
+        assertThatThrownBy(() -> validatorUtil.validate("bean", null))
                 .isInstanceOf(ConstraintViolationException.class)
-                .hasMessage("message")
+                .hasMessage("bean has invalid values")
                 .asInstanceOf(InstanceOfAssertFactories.type(ConstraintViolationException.class))
                 .extracting(ConstraintViolationException::getConstraintViolations)
                 .isEqualTo(errors);
     }
 
     @Test
-    public void validateThrowsExceptionIfThereIsAnError() {
+    void validateThrowsExceptionIfThereIsAnError() {
         var errors = Set.of(newConstraint());
 
         when(validator.validate(any(), any()))
@@ -58,9 +58,9 @@ public class ValidatorsTest {
         when(validator.validate(any(), any()))
                 .thenReturn(errors);
 
-        assertThatThrownBy(() -> validatorUtil.validate("message", ""))
+        assertThatThrownBy(() -> validatorUtil.validate("bean", ""))
                 .isInstanceOf(ConstraintViolationException.class)
-                .hasMessage("message")
+                .hasMessage("bean has invalid values")
                 .asInstanceOf(InstanceOfAssertFactories.type(ConstraintViolationException.class))
                 .extracting(ConstraintViolationException::getConstraintViolations)
                 .isEqualTo(errors);

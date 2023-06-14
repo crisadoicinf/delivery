@@ -3,9 +3,10 @@ package com.crisado.delivery.validator;
 import com.crisado.delivery.dto.DateRangeDto;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+import jakarta.validation.Valid;
 import java.time.ZonedDateTime;
 
-public class DateRangeValidator implements ConstraintValidator<DateRange, DateRangeDto> {
+public class DateRangeValidator implements ConstraintValidator<Valid, DateRangeDto> {
 
     /**
      * Validates a DateRangeDto object to ensure that the 'to' date is after the

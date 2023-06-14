@@ -3,10 +3,10 @@ package com.crisado.delivery.model;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 
-public class CashPaymentTest {
+class CashPaymentTest {
 
     @Test
-    public void getRecipientNameWhenRiderIsNull() {
+    void getRecipientNameWhenRiderIsNull() {
         var payment = new CashPayment();
 
         assertThat(payment.getRecipientName())
@@ -14,7 +14,7 @@ public class CashPaymentTest {
     }
 
     @Test
-    public void getRecipientName() {
+    void getRecipientName() {
         var payment = CashPayment.builder()
                 .rider(Rider.builder().name("rider1").build())
                 .build();
@@ -24,7 +24,7 @@ public class CashPaymentTest {
     }
 
     @Test
-    public void getRecipientType() {
+    void getRecipientType() {
         var payment = new CashPayment();
 
         assertThat(payment.getRecipientType())

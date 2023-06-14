@@ -10,12 +10,12 @@ import org.modelmapper.ModelMapper;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
-public class BankAccountDtoMapperTest {
+class BankAccountDtoMapperTest {
 
     private final ModelMapper mapper = new MapperConfig().getModelMapper();
 
     @Test
-    public void mapBankAccount() {
+    void mapBankAccount() {
         var bankAccount = BankAccount.builder()
                 .id(1)
                 .name("bank1")

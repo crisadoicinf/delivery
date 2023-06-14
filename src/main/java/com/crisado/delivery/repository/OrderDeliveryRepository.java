@@ -1,11 +1,11 @@
 package com.crisado.delivery.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 
 import com.crisado.delivery.model.OrderDelivery;
+import org.springframework.data.repository.Repository;
 
-@Repository
-public interface OrderDeliveryRepository extends JpaRepository<OrderDelivery, Long> {
+public interface OrderDeliveryRepository extends Repository<OrderDelivery, Long> {
 
+    OrderDelivery save(OrderDelivery entity);
+    
 }

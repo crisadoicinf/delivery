@@ -1,19 +1,26 @@
 package com.crisado.delivery.service;
 
-import static java.util.stream.Collectors.toList;
+import com.crisado.delivery.dto.BankAccountDto;
 
 import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.List;
 
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import com.crisado.delivery.dto.CashPaymentDto;
+import com.crisado.delivery.dto.CreatePaymentDtoRequest;
+import com.crisado.delivery.dto.GetOrderPaymentDtoRequest;
 import com.crisado.delivery.dto.PaymentDto;
 import com.crisado.delivery.dto.TransferencePaymentDto;
-import com.crisado.delivery.exception.ArgumentException;
-import com.crisado.delivery.exception.StateException;
+import com.crisado.delivery.dto.UpdatePaymentDtoRequest;
+import com.crisado.delivery.exception.BankAccountNotFoundException;
+import com.crisado.delivery.exception.OrderNotFoundException;
+import com.crisado.delivery.exception.PaymentException;
+import com.crisado.delivery.exception.PaymentNotFoundException;
+import com.crisado.delivery.exception.PaymentTypeChangedException;
+import com.crisado.delivery.exception.PaymentUnkownTypeException;
+import com.crisado.delivery.exception.RiderNotFoundException;
 import com.crisado.delivery.model.CashPayment;
 import com.crisado.delivery.model.Order;
 import com.crisado.delivery.model.Payment;
@@ -25,119 +32,146 @@ import com.crisado.delivery.repository.RiderRepository;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 
+import static java.util.stream.Collectors.toList;
+
 @Service
 @Transactional
 @AllArgsConstructor
 public class OrderPaymentService {
 
+    private final Services services;
     private final OrderRepository orderRepository;
     private final RiderRepository riderRepository;
     private final BankAccountRepository bankAccountRepository;
-    private final ModelMapper mapper;
+
+    public List<BankAccountDto> getBankAccounts() {
+        return bankAccountRepository.findAll()
+                .stream()
+                .map(bank -> services.map(bank, BankAccountDto.class))
+                .toList();
+    }
 
     /**
-     * Retrieves a list of payments associated with a given order.
+     * Retrieves a list of payments associated with the specified order ID.
      *
-     * @param orderId The ID of the order.
-     * @return A list of payments associated with the specified order.
+     * @param request the request object containing the necessary parameters
+     * @return a list of payments
      */
-    public List<PaymentDto> getPayments(long orderId) {
-        return getOrder(orderId)
+    public List<PaymentDto> getPayments(GetOrderPaymentDtoRequest request) {
+        services.validate("Get Payments Request", request);
+        var orderId = request.getOrderId();
+
+        return findOrderById(orderId)
                 .getPayments()
                 .stream()
-                .map(payment -> mapper.map(payment, PaymentDto.class))
+                .map(payment -> services.map(payment, PaymentDto.class))
                 .collect(toList());
     }
 
     /**
-     * Creates a new payment for a given order.
+     * Creates a new payment for the specified order based on the provided
+     * request.
      *
-     * @param orderId The ID of the order.
-     * @param newPayment The request for the new payment.
-     * @return The created payment.
-     * @throws ArgumentException if the payment type is unknown.
-     * @throws StateException if the payment could not be created.
+     * @param createPaymentRequest the request object containing the necessary parameters
+     * @return the created payment as a PaymentDto object
+     * @throws PaymentUnkownTypeException if the new payment type is unknown
+     * @throws PaymentException if the payment could not be created
      */
-    public PaymentDto createPayment(long orderId, PaymentDto newPayment) {
-        Order order = getOrder(orderId);
+    public PaymentDto createPayment(CreatePaymentDtoRequest createPaymentRequest) {
+        services.validate("Create Payment Request", createPaymentRequest);
+        var orderId = createPaymentRequest.getOrderId();
+        var newPayment = createPaymentRequest.getNewPayment();
+
+        var order = findOrderById(orderId);
         Payment payment;
         if (newPayment instanceof CashPaymentDto newCashPayment) {
             payment = updateCashPayment(new CashPayment(), newCashPayment);
         } else if (newPayment instanceof TransferencePaymentDto newTransferencePayment) {
             payment = updateTransferencePayment(new TransferencePayment(), newTransferencePayment);
         } else {
-            throw new ArgumentException("Unknown Payment Type");
+            throw new PaymentUnkownTypeException();
         }
-        updatePayment(payment, newPayment);
+        updateAbstractPayment(payment, newPayment);
         payment.setDate(ZonedDateTime.now());
         var prevPayments = new HashSet<>(order.getPayments());
         order.getPayments().add(payment);
-        orderRepository.save(order);
+        saveOrder(order);
         payment = order.getPayments()
                 .stream()
                 .filter(p -> !prevPayments.contains(p))
                 .findFirst()
-                .orElseThrow(() -> new StateException("Payment could not be created"));
-        return mapper.map(payment, PaymentDto.class);
+                .orElseThrow(() -> new PaymentException("Payment could not be created"));
+        return services.map(payment, PaymentDto.class);
     }
 
     /**
-     * Updates an existing payment for a given order.
+     * Updates an existing payment for the specified order based on the provided
+     * request.
      *
-     * @param orderId The ID of the order.
-     * @param paymentId The ID of the payment to update.
-     * @param newPayment The request the updated payment.
-     * @return The updated PaymentDto object.
-     * @throws StateException if the payment is not found or the payment type
-     * cannot be changed.
-     * @throws ArgumentException if the payment type is unknown.
+     * @param request the request object containing the necessary parameters
+     * @return the updated payment as a PaymentDto object
+     * @throws PaymentNotFoundException if the payment with the specified ID is
+     * not found
+     * @throws PaymentTypeChangedException if the payment type cannot be changed
+     * @throws PaymentUnkownTypeException if the new payment type is unknown
      */
-    public PaymentDto updatePayment(long orderId, long paymentId, PaymentDto newPayment) {
-        Order order = getOrder(orderId);
+    public PaymentDto updatePayment(UpdatePaymentDtoRequest updatePaymentRequest) {
+        services.validate("Update Payment Request", updatePaymentRequest);
+        var orderId = updatePaymentRequest.getOrderId();
+        var paymentId = updatePaymentRequest.getPaymentId();
+        var newPayment = updatePaymentRequest.getNewPayment();
+
+        Order order = findOrderById(orderId);
         Payment payment = order.getPayments()
                 .stream()
                 .filter(p -> paymentId == p.getId())
                 .findFirst()
-                .orElseThrow(() -> new StateException("Payment not found"));
+                .orElseThrow(() -> new PaymentNotFoundException(paymentId));
         if (newPayment instanceof CashPaymentDto newCashPayment) {
             if (!(payment instanceof CashPayment cashPayment)) {
-                throw new StateException("Payment Type can not be changed");
+                throw new PaymentTypeChangedException();
             }
             updateCashPayment(cashPayment, newCashPayment);
         } else if (newPayment instanceof TransferencePaymentDto newTransferencePayment) {
             if (!(payment instanceof TransferencePayment transferencePayment)) {
-                throw new StateException("Payment Type can not be changed");
+                throw new PaymentTypeChangedException();
             }
             updateTransferencePayment(transferencePayment, newTransferencePayment);
         } else {
-            throw new ArgumentException("Unknown Payment Type");
+            throw new PaymentUnkownTypeException();
         }
-        updatePayment(payment, newPayment);
-        orderRepository.save(order);
-        return mapper.map(payment, PaymentDto.class);
+        updateAbstractPayment(payment, newPayment);
+        saveOrder(order);
+        return services.map(payment, PaymentDto.class);
     }
 
-    private Order getOrder(long orderId) {
-        return orderRepository.findById(orderId)
-                .orElseThrow(() -> new StateException("Order not found"));
+    private Order findOrderById(long id) {
+        return orderRepository.findById(id)
+                .orElseThrow(() -> new PaymentException(new OrderNotFoundException(id)));
     }
 
-    private Payment updatePayment(Payment payment, PaymentDto newPayment) {
+    private Payment updateAbstractPayment(Payment payment, PaymentDto newPayment) {
+        services.validate("Update Payment Request", newPayment);
         payment.setAmount(newPayment.getAmount());
         return payment;
     }
 
     private Payment updateCashPayment(CashPayment cashPayment, CashPaymentDto newPayment) {
+        services.validate("Cash Payment Request", newPayment);
         cashPayment.setRider(riderRepository.findById(newPayment.getRiderId())
-                .orElseThrow(() -> new StateException("Rider not found")));
+                .orElseThrow(() -> new PaymentException(new RiderNotFoundException(newPayment.getRiderId()))));
         return cashPayment;
     }
 
-    private Payment updateTransferencePayment(TransferencePayment transferencePayment,
-            TransferencePaymentDto newPayment) {
+    private Payment updateTransferencePayment(TransferencePayment transferencePayment, TransferencePaymentDto newPayment) {
+        services.validate("Transaction Payment Request", newPayment);
         transferencePayment.setBankAccount(bankAccountRepository.findById(newPayment.getBankAccountId())
-                .orElseThrow(() -> new StateException("Bank Account not found")));
+                .orElseThrow(() -> new PaymentException(new BankAccountNotFoundException(newPayment.getBankAccountId()))));
         return transferencePayment;
+    }
+
+    private void saveOrder(Order order) {
+        orderRepository.save(order);
     }
 
 }

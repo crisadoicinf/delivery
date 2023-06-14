@@ -3,7 +3,6 @@ package com.crisado.delivery.config;
 import static org.springframework.security.config.Customizer.withDefaults;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -38,7 +37,7 @@ public class SecurityConfig {
                 .password(encoder.encode(prop.password()))
                 .roles("ADMIN")
                 .build())
-                .collect(Collectors.toList()));
+                .toList());
     }
 
     @Bean

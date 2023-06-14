@@ -1,10 +1,8 @@
 package com.crisado.delivery.service;
 
-import static java.util.stream.Collectors.toList;
 
 import java.util.List;
 
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import com.crisado.delivery.dto.BankAccountDto;
@@ -14,15 +12,16 @@ import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
-public class BankService {
+public class BankAccountService {
 
+    private final Services services;
     private final BankAccountRepository bankAccountRepository;
-    private final ModelMapper mapper;
 
-    public List<BankAccountDto> getAllBankAccounts() {
+    public List<BankAccountDto> getBankAccounts() {
         return bankAccountRepository.findAll()
                 .stream()
-                .map(bank -> mapper.map(bank, BankAccountDto.class))
-                .collect(toList());
+                .map(bank -> services.map(bank, BankAccountDto.class))
+                .toList();
     }
+    
 }

@@ -18,12 +18,12 @@ import org.modelmapper.ModelMapper;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
-public class OrderSummaryDtoMapperTest {
+class OrderSummaryDtoMapperTest {
 
     private final ModelMapper mapper = new MapperConfig().getModelMapper();
 
     @Test
-    public void mapOrder() {
+    void mapOrder() {
         var deliveryDate = ZonedDateTime.now();
         var product1 = Product.builder()
                 .id(1)

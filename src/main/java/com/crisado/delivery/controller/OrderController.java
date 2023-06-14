@@ -1,6 +1,9 @@
 package com.crisado.delivery.controller;
 
-import java.time.ZonedDateTime;
+import com.crisado.delivery.dto.CreateOrderDtoRequest;
+import com.crisado.delivery.dto.DateRangeDto;
+import com.crisado.delivery.dto.DeleteOrderDtoRequest;
+import com.crisado.delivery.dto.GetOrderDtoRequest;
 import java.util.List;
 import java.util.Map;
 
@@ -19,9 +22,11 @@ import com.crisado.delivery.dto.OrderDto;
 import com.crisado.delivery.dto.OrderDtoRequest;
 import com.crisado.delivery.dto.OrderSummaryDto;
 import com.crisado.delivery.dto.ProductDto;
+import com.crisado.delivery.dto.UpdateOrderDtoRequest;
 import com.crisado.delivery.service.OrderService;
 
 import lombok.AllArgsConstructor;
+import org.springframework.web.bind.annotation.ModelAttribute;
 
 @AllArgsConstructor
 @RestController
@@ -37,39 +42,42 @@ public class OrderController {
     }
 
     @GetMapping("/count")
-    public Map<Integer, Long> getDailyAmountOfOrdersByMonth(@RequestParam int month) {
-        return orderService.getDailyAmountOfOrdersByMonth(month);
+    public ResponseEntity<Map<Integer, Long>> getDailyAmountOfOrdersByMonth(@RequestParam int month) {
+        var orders = orderService.getDailyAmountOfOrdersByMonth(month);
+        return ResponseEntity.ok(orders);
     }
 
     @GetMapping
-    public ResponseEntity<List<OrderSummaryDto>> getOrdersBetweenDates(
-            @RequestParam ZonedDateTime from,
-            @RequestParam ZonedDateTime to) {
-        var orders = orderService.getOrdersBetweenDates(from, to);
+    public ResponseEntity<List<OrderSummaryDto>> getOrderSummaries(@ModelAttribute DateRangeDto request) {
+        var orders = orderService.getOrderSummaries(request);
         return ResponseEntity.ok(orders);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<OrderDto> getOrder(@PathVariable long id) {
-        var order = orderService.getOrder(id);
+        var getOrderRequest = new GetOrderDtoRequest(id);
+        var order = orderService.getOrder(getOrderRequest);
         return ResponseEntity.ok(order);
     }
 
     @PostMapping
     public ResponseEntity<OrderDto> createOrder(@RequestBody OrderDtoRequest orderRequest) {
-        var order = orderService.createOrder(orderRequest);
+        var reateRequest = new CreateOrderDtoRequest(orderRequest);
+        var order = orderService.createOrder(reateRequest);
         return ResponseEntity.ok(order);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<OrderDto> updateOrder(@PathVariable long id, @RequestBody OrderDtoRequest orderRequest) {
-        var order = orderService.updateOrder(id, orderRequest);
+        var updateRequest = new UpdateOrderDtoRequest(id, orderRequest);
+        var order = orderService.updateOrder(updateRequest);
         return ResponseEntity.ok(order);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteOrder(@PathVariable Long id) {
-        orderService.deleteOrder(id);
+    public ResponseEntity<Void> deleteOrder(@PathVariable long id) {
+        var deleteOrderRequest = new DeleteOrderDtoRequest(id);
+        orderService.deleteOrder(deleteOrderRequest);
         return ResponseEntity.noContent().build();
     }
 

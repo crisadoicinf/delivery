@@ -10,12 +10,12 @@ import org.modelmapper.ModelMapper;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
-public class RiderDtoMapperTest {
+class RiderDtoMapperTest {
 
     private final ModelMapper mapper = new MapperConfig().getModelMapper();
 
     @Test
-    public void mapRider() {
+    void mapRider() {
         var rider = Rider.builder()
                 .id(1)
                 .name("rider1")

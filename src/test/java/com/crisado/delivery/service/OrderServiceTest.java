@@ -1,5 +1,9 @@
 package com.crisado.delivery.service;
 
+import com.crisado.delivery.dto.CreateOrderDtoRequest;
+import com.crisado.delivery.dto.DateRangeDto;
+import com.crisado.delivery.dto.DeleteOrderDtoRequest;
+import com.crisado.delivery.dto.GetOrderDtoRequest;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.List;
@@ -11,20 +15,22 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.modelmapper.ModelMapper;
 
 import com.crisado.delivery.dto.ProductDto;
-import com.crisado.delivery.exception.StateException;
 import com.crisado.delivery.dto.OrderDto;
 import com.crisado.delivery.dto.OrderDtoRequest;
 import com.crisado.delivery.dto.OrderSummaryDto;
+import com.crisado.delivery.dto.UpdateOrderDtoRequest;
+import com.crisado.delivery.exception.OrderException;
+import com.crisado.delivery.exception.OrderNotFoundException;
+import com.crisado.delivery.exception.ProductNotFoundException;
+import com.crisado.delivery.exception.RiderNotFoundException;
 import com.crisado.delivery.model.Order;
 import com.crisado.delivery.model.OrderDelivery;
 import com.crisado.delivery.model.OrderItem;
 import com.crisado.delivery.model.OrdersCountByDay;
 import com.crisado.delivery.model.Product;
 import com.crisado.delivery.model.Rider;
-import com.crisado.delivery.repository.OrderItemRepository;
 import com.crisado.delivery.repository.OrderRepository;
 import com.crisado.delivery.repository.ProductRepository;
 import com.crisado.delivery.repository.RiderRepository;
@@ -39,18 +45,16 @@ import static org.assertj.core.groups.Tuple.tuple;
 import static org.assertj.core.data.MapEntry.entry;
 
 @ExtendWith(MockitoExtension.class)
-public class OrderServiceTest {
+class OrderServiceTest {
 
     @Mock
     private OrderRepository orderRepository;
-    @Mock
-    private OrderItemRepository orderItemRepository;
     @Mock
     private ProductRepository productRepository;
     @Mock
     private RiderRepository riderRepository;
     @Mock
-    private ModelMapper mapper;
+    private Services services;
     @InjectMocks
     private OrderService service;
     @Captor
@@ -58,21 +62,23 @@ public class OrderServiceTest {
 
     @Test
     void createOrderThrowsExceptionIfRiderNotFound() {
-        var request = OrderDtoRequest.builder()
+        var orderRequest = OrderDtoRequest.builder()
                 .deliveryRiderId(1)
                 .build();
+        var createOrderDtoRequest = new CreateOrderDtoRequest(orderRequest);
 
-        when(riderRepository.findById(request.getDeliveryRiderId()))
+        when(riderRepository.findById(orderRequest.getDeliveryRiderId()))
                 .thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.createOrder(request))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Rider not found");
+        assertThatThrownBy(() -> service.createOrder(createOrderDtoRequest))
+                .isInstanceOf(OrderException.class)
+                .hasMessage("Rider not found")
+                .hasCauseInstanceOf(RiderNotFoundException.class);
     }
 
     @Test
     void createOrderThrowsExceptionIfProductNotFound() {
-        var request = OrderDtoRequest.builder()
+        var orderRequest = OrderDtoRequest.builder()
                 .deliveryRiderId(1)
                 .items(List.of(OrderDtoRequest.OrderItem.builder()
                         .productId(1)
@@ -81,22 +87,24 @@ public class OrderServiceTest {
                 )
                 .build();
         var rider = new Rider();
+        var createOrderDtoRequest = new CreateOrderDtoRequest(orderRequest);
 
-        when(riderRepository.findById(request.getDeliveryRiderId()))
+        when(riderRepository.findById(orderRequest.getDeliveryRiderId()))
                 .thenReturn(Optional.of(rider));
-        when(productRepository.findById(request.getItems().get(0).getProductId()))
+        when(productRepository.findById(orderRequest.getItems().get(0).getProductId()))
                 .thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.createOrder(request))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Product not found");
+        assertThatThrownBy(() -> service.createOrder(createOrderDtoRequest))
+                .isInstanceOf(OrderException.class)
+                .hasMessage("Product not found")
+                .hasCauseInstanceOf(ProductNotFoundException.class);
     }
 
     @Test
     void createOrder() {
         var deliveryDate = ZonedDateTime.now();
         var deliveryDateRange = deliveryDate.plusDays(1);
-        var request = OrderDtoRequest.builder()
+        var orderRequest = OrderDtoRequest.builder()
                 .customerName("crisado")
                 .customerPhone("12345678")
                 .note("my order")
@@ -123,16 +131,16 @@ public class OrderServiceTest {
         var product2 = Product.builder().price(15).build();
         var orderDto = new OrderDto();
 
-        when(riderRepository.findById(request.getDeliveryRiderId()))
+        when(riderRepository.findById(orderRequest.getDeliveryRiderId()))
                 .thenReturn(Optional.of(rider));
         when(productRepository.findById(1))
                 .thenReturn(Optional.of(product1));
         when(productRepository.findById(2))
                 .thenReturn(Optional.of(product2));
-        when(mapper.map(any(Order.class), eq(OrderDto.class)))
+        when(services.map(any(Order.class), eq(OrderDto.class)))
                 .thenReturn(orderDto);
 
-        assertThat(service.createOrder(request))
+        assertThat(service.createOrder(new CreateOrderDtoRequest(orderRequest)))
                 .isSameAs(orderDto);
         verify(orderRepository)
                 .save(orderCaptor.capture());
@@ -196,40 +204,25 @@ public class OrderServiceTest {
     }
 
     @Test
-    void deleteOrderThrowsExceptionIfOrderNotFound() {
-        var orderId = 1L;
-
-        when(orderRepository.findById(orderId))
-                .thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> service.deleteOrder(orderId))
-                .isInstanceOf(StateException.class)
-                .hasMessage("Order not found");
-
-    }
-
-    @Test
     void deleteOrder() {
         var orderId = 1L;
         var order = new Order();
 
-        when(orderRepository.findById(orderId))
-                .thenReturn(Optional.of(order));
-
-        service.deleteOrder(orderId);
+        service.deleteOrder(new DeleteOrderDtoRequest(orderId));
         verify(orderRepository)
-                .delete(order);
+                .deleteById(orderId);
     }
 
     @Test
     void getOrderThrowsExceptionIfOrderNotFound() {
         var orderId = 1L;
+        var orderDtoRequest = new GetOrderDtoRequest(orderId);
 
         when(orderRepository.findById(orderId))
                 .thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.getOrder(orderId))
-                .isInstanceOf(StateException.class)
+        assertThatThrownBy(() -> service.getOrder(orderDtoRequest))
+                .isInstanceOf(OrderNotFoundException.class)
                 .hasMessage("Order not found");
     }
 
@@ -240,10 +233,10 @@ public class OrderServiceTest {
 
         when(orderRepository.findById(orderId))
                 .thenReturn(Optional.of(new Order()));
-        when(mapper.map(any(Order.class), eq(OrderDto.class)))
+        when(services.map(any(Order.class), eq(OrderDto.class)))
                 .thenReturn(orderDto);
 
-        assertThat(service.getOrder(orderId))
+        assertThat(service.getOrder(new GetOrderDtoRequest(orderId)))
                 .isSameAs(orderDto);
     }
 
@@ -258,10 +251,10 @@ public class OrderServiceTest {
 
         when(orderRepository.findAllByDeliveryDateBetween(from, to))
                 .thenReturn(orders);
-        when(mapper.map(any(Order.class), eq(OrderSummaryDto.class)))
+        when(services.map(any(Order.class), eq(OrderSummaryDto.class)))
                 .thenReturn(orderDto1, orderDto2);
 
-        assertThat(service.getOrdersBetweenDates(from, to))
+        assertThat(service.getOrderSummaries(new DateRangeDto(from, to)))
                 .containsExactly(orderDto1, orderDto2);
     }
 
@@ -292,7 +285,7 @@ public class OrderServiceTest {
 
         when(productRepository.findAll())
                 .thenReturn(products);
-        when(mapper.map(any(Product.class), eq(ProductDto.class)))
+        when(services.map(any(Product.class), eq(ProductDto.class)))
                 .thenReturn(productDto1, productDto2);
 
         assertThat(service.getProducts())
@@ -302,13 +295,14 @@ public class OrderServiceTest {
     @Test
     void updateOrderThrowsExceptionIfOrderNotFound() {
         var orderId = 1L;
-        var request = new OrderDtoRequest();
+        var orderRequest = new OrderDtoRequest();
+        var updateOrderDtoRequest = new UpdateOrderDtoRequest(orderId, orderRequest);
 
         when(orderRepository.findById(orderId))
                 .thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.updateOrder(orderId, request))
-                .isInstanceOf(StateException.class)
+        assertThatThrownBy(() -> service.updateOrder(updateOrderDtoRequest))
+                .isInstanceOf(OrderNotFoundException.class)
                 .hasMessage("Order not found");
 
     }
@@ -316,26 +310,28 @@ public class OrderServiceTest {
     @Test
     void updateOrderThrowsExceptionIfRiderNotFound() {
         var orderId = 1L;
-        var request = OrderDtoRequest.builder()
+        var orderRequest = OrderDtoRequest.builder()
                 .deliveryRiderId(1)
                 .build();
         var order = new Order();
+        var updateOrderDtoRequest = new UpdateOrderDtoRequest(orderId, orderRequest);
 
         when(orderRepository.findById(orderId))
                 .thenReturn(Optional.of(order));
-        when(riderRepository.findById(request.getDeliveryRiderId()))
+        when(riderRepository.findById(orderRequest.getDeliveryRiderId()))
                 .thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.updateOrder(orderId, request))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Rider not found");
+        assertThatThrownBy(() -> service.updateOrder(updateOrderDtoRequest))
+                .isInstanceOf(OrderException.class)
+                .hasMessage("Rider not found")
+                .hasCauseInstanceOf(RiderNotFoundException.class);
 
     }
 
     @Test
     void updateOrderThrowsExceptionIfProductNotFound() {
         var orderId = 1L;
-        var request = OrderDtoRequest.builder()
+        var orderRequest = OrderDtoRequest.builder()
                 .deliveryRiderId(1)
                 .items(List.of(OrderDtoRequest.OrderItem.builder()
                         .productId(1)
@@ -347,17 +343,19 @@ public class OrderServiceTest {
                 .items(new HashSet<>())
                 .build();
         var rider = new Rider();
+        var updateOrderDtoRequest = new UpdateOrderDtoRequest(orderId, orderRequest);
 
         when(orderRepository.findById(orderId))
                 .thenReturn(Optional.of(order));
-        when(riderRepository.findById(request.getDeliveryRiderId()))
+        when(riderRepository.findById(orderRequest.getDeliveryRiderId()))
                 .thenReturn(Optional.of(rider));
-        when(productRepository.findById(request.getItems().get(0).getProductId()))
+        when(productRepository.findById(orderRequest.getItems().get(0).getProductId()))
                 .thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.updateOrder(orderId, request))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Product not found");
+        assertThatThrownBy(() -> service.updateOrder(updateOrderDtoRequest))
+                .isInstanceOf(OrderException.class)
+                .hasMessage("Product not found")
+                .hasCauseInstanceOf(ProductNotFoundException.class);
     }
 
     @Test
@@ -365,7 +363,7 @@ public class OrderServiceTest {
         var deliveryDate = ZonedDateTime.now();
         var deliveryDateRange = deliveryDate.plusDays(1);
         var orderId = 1L;
-        var request = OrderDtoRequest.builder()
+        var orderRequest = OrderDtoRequest.builder()
                 .customerName("crisado")
                 .customerPhone("12345678")
                 .note("my order")
@@ -437,16 +435,16 @@ public class OrderServiceTest {
 
         when(orderRepository.findById(orderId))
                 .thenReturn(Optional.of(order));
-        when(riderRepository.findById(request.getDeliveryRiderId()))
+        when(riderRepository.findById(orderRequest.getDeliveryRiderId()))
                 .thenReturn(Optional.of(rider));
         when(productRepository.findById(1))
                 .thenReturn(Optional.of(product1));
         when(productRepository.findById(2))
                 .thenReturn(Optional.of(product2));
-        when(mapper.map(eq(order), eq(OrderDto.class)))
+        when(services.map(order, OrderDto.class))
                 .thenReturn(orderDto);
 
-        assertThat(service.updateOrder(orderId, request))
+        assertThat(service.updateOrder(new UpdateOrderDtoRequest(orderId, orderRequest)))
                 .isSameAs(orderDto);
         verify(orderRepository)
                 .save(order);

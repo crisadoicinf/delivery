@@ -15,14 +15,20 @@ public class Validators {
 
     private final Validator validator;
 
-    public <T extends Object> void validate(String message, T object, Class<?>... groups) {
-        throwException(message, validator.validate(new ValidatorWrap(object)));
-        throwException(message, validator.validate(object, groups));
+    public <T extends Object> void validate(String name, T object, Class<?>... groups) {
+        throwException(name, validator.validate(new ValidatorWrap<T>(object)));
+        throwException(name, validator.validate(object, groups));
     }
 
-    private void throwException(String message, Set<ConstraintViolation<Object>> errors) {
+    private <T extends Object> void throwException(String name, Set<ConstraintViolation<T>> errors) {
+        if (name == null) {
+            throw new IllegalArgumentException("'name' must nut be null");
+        }
+        if (errors == null) {
+            throw new IllegalArgumentException("'errors' must not be null");
+        }
         if (!errors.isEmpty()) {
-            throw new ConstraintViolationException(message, errors);
+            throw new ConstraintViolationException(name + " has invalid values", errors);
         }
     }
 

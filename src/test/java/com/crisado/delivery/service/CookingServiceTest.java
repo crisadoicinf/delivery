@@ -11,72 +11,66 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.crisado.delivery.model.CookingProduct;
-import com.crisado.delivery.repository.OrderItemRepository;
-import com.crisado.delivery.validator.DateRange;
-import com.crisado.delivery.validator.Validators;
+import com.crisado.delivery.model.OrderItemQuantity;
 import jakarta.validation.ConstraintViolationException;
-import jakarta.validation.constraints.NotNull;
 
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.doNothing;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isNull;
+import com.crisado.delivery.repository.OrderItemRepository;
 
 @ExtendWith(MockitoExtension.class)
-public class CookingServiceTest {
+class CookingServiceTest {
 
     @Mock
     private OrderItemRepository orderItemRepository;
     @Mock
-    private Validators validator;
+    private Services services;
     @InjectMocks
     private CookingService cookingService;
 
     @Test
-    public void getProductsToCook() {
-        var product1 = new CookingProduct("product1", "note1", 1);
-        var product2 = new CookingProduct("product2", "note1", 2);
+    void getProductsToCookByDateRange() {
+        var product1 = new OrderItemQuantity("product1", "note1", 1);
+        var product2 = new OrderItemQuantity("product2", "note1", 2);
         var from = ZonedDateTime.parse("2023-06-01T00:00:00Z");
         var to = ZonedDateTime.parse("2023-06-05T00:00:00Z");
         var dateRangeDto = new DateRangeDto(from, to);
 
-        when(orderItemRepository.findAllByDeliveryDate(from, to))
+        when(orderItemRepository.findAllSumQuantityByDateBetween(from, to))
                 .thenReturn(List.of(product1, product2));
 
-        assertThat(cookingService.getProductsToCook(dateRangeDto))
+        assertThat(cookingService.getProductsToCookByDateRange(dateRangeDto))
                 .containsExactly(product1, product2);
     }
 
     @Test
-    public void getProductsThrowsExceptionIfDateRangeIsNull() {
+    void getProductsToCookByDateRangeThrowsExceptionIfDateRangeIsNull() {
         var exception = new ConstraintViolationException(null);
         
         doThrow(exception)
-                .when(validator)
-                .validate(anyString(), isNull(), eq(NotNull.class));
+                .when(services)
+                .validate(anyString(), isNull(), any());
 
-        assertThatThrownBy(() -> cookingService.getProductsToCook(null))
+        assertThatThrownBy(() -> cookingService.getProductsToCookByDateRange(null))
                 .isSameAs(exception);
     }
 
     @Test
-    public void getProductsThrowsExceptionIfDateRangeIsInvalid() {
+    void getProductsToCookByDateRangeThrowsExceptionIfDateRangeIsInvalid() {
         var dateRangeDto = new DateRangeDto(null, null);
         var exception = new ConstraintViolationException(null);
         
-        doNothing()
-                .when(validator)
-                .validate(anyString(), eq(dateRangeDto), eq(NotNull.class));
         doThrow(exception)
-                .when(validator)
-                .validate(anyString(), eq(dateRangeDto), eq(DateRange.class));
+                .when(services)
+                .validate(anyString(), eq(dateRangeDto), any());
 
-        assertThatThrownBy(() -> cookingService.getProductsToCook(dateRangeDto))
+        assertThatThrownBy(() -> cookingService.getProductsToCookByDateRange(dateRangeDto))
                 .isSameAs(exception);
     }
 }

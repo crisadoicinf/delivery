@@ -1,14 +1,16 @@
 package com.crisado.delivery.dto;
 
-import com.crisado.delivery.validator.DateRange;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.time.ZonedDateTime;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 
-@Getter
 @AllArgsConstructor
-@DateRange
+@Builder
+@Getter
+@Valid
 public class DateRangeDto {
 
     @NotNull

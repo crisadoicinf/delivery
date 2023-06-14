@@ -9,4 +9,4 @@ insert into product (id, name, price) values (4, 'empanada queso champiñon x3',
 insert into product (id, name, price) values (5, 'empanada queso maiz x3', 10);
 
 insert into rider (id, name) values (1, 'Cristian');
-insert into rider (id, name) values (2, 'Cristian');
+insert into rider (id, name) values (2, 'Michi');

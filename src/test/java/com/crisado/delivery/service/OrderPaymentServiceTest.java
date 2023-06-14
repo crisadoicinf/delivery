@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doAnswer;
 
 import java.time.ZonedDateTime;
 import java.util.HashSet;
@@ -18,13 +19,20 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.modelmapper.ModelMapper;
 
 import com.crisado.delivery.dto.CashPaymentDto;
+import com.crisado.delivery.dto.CreatePaymentDtoRequest;
+import com.crisado.delivery.dto.GetOrderPaymentDtoRequest;
 import com.crisado.delivery.dto.PaymentDto;
 import com.crisado.delivery.dto.TransferencePaymentDto;
-import com.crisado.delivery.exception.ArgumentException;
-import com.crisado.delivery.exception.StateException;
+import com.crisado.delivery.dto.UpdatePaymentDtoRequest;
+import com.crisado.delivery.exception.BankAccountNotFoundException;
+import com.crisado.delivery.exception.OrderNotFoundException;
+import com.crisado.delivery.exception.PaymentException;
+import com.crisado.delivery.exception.PaymentNotFoundException;
+import com.crisado.delivery.exception.PaymentTypeChangedException;
+import com.crisado.delivery.exception.PaymentUnkownTypeException;
+import com.crisado.delivery.exception.RiderNotFoundException;
 import com.crisado.delivery.model.BankAccount;
 import com.crisado.delivery.model.CashPayment;
 import com.crisado.delivery.model.Order;
@@ -35,7 +43,7 @@ import com.crisado.delivery.repository.OrderRepository;
 import com.crisado.delivery.repository.RiderRepository;
 
 @ExtendWith(MockitoExtension.class)
-public class OrderPaymentServiceTest {
+class OrderPaymentServiceTest {
 
     @Mock
     private OrderRepository orderRepository;
@@ -44,20 +52,22 @@ public class OrderPaymentServiceTest {
     @Mock
     private BankAccountRepository bankAccountRepository;
     @Mock
-    private ModelMapper mapper;
+    private Services services;
     @InjectMocks
     private OrderPaymentService orderPaymentService;
 
     @Test
     void getPaymentsThrowsExceptionIfOrderDoesNotExist() {
         var orderId = 1L;
+        var orderPaymentDtoRequest = new GetOrderPaymentDtoRequest(orderId);
 
         when(orderRepository.findById(orderId))
                 .thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> orderPaymentService.getPayments(orderId))
-                .isInstanceOf(StateException.class)
-                .hasMessage("Order not found");
+        assertThatThrownBy(() -> orderPaymentService.getPayments(orderPaymentDtoRequest))
+                .isInstanceOf(PaymentException.class)
+                .hasMessage("Order not found")
+                .hasCauseInstanceOf(OrderNotFoundException.class);
     }
 
     @Test
@@ -73,112 +83,119 @@ public class OrderPaymentServiceTest {
 
         when(orderRepository.findById(orderId))
                 .thenReturn(Optional.of(order));
-        when(mapper.map(any(CashPayment.class), eq(PaymentDto.class)))
+        when(services.map(any(CashPayment.class), eq(PaymentDto.class)))
                 .thenReturn(cashPaymentDto);
-        when(mapper.map(any(TransferencePayment.class), eq(PaymentDto.class)))
+        when(services.map(any(TransferencePayment.class), eq(PaymentDto.class)))
                 .thenReturn(transferencePaymentDto);
 
-        assertThat(orderPaymentService.getPayments(orderId))
+        assertThat(orderPaymentService.getPayments(new GetOrderPaymentDtoRequest(orderId)))
                 .containsExactlyInAnyOrder(cashPaymentDto, transferencePaymentDto);
     }
 
     @Test
     void createPaymentThrowsExceptionIfOrderDoesNotExist() {
         var orderId = 1L;
-        var request = new CashPaymentDto();
+        var newPayment = new CashPaymentDto();
+        var createPaymentDtoRequest = new CreatePaymentDtoRequest(orderId, newPayment);
 
         when(orderRepository.findById(orderId))
                 .thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> orderPaymentService.createPayment(orderId, request))
-                .isInstanceOf(StateException.class)
-                .hasMessage("Order not found");
+        assertThatThrownBy(() -> orderPaymentService.createPayment(createPaymentDtoRequest))
+                .isInstanceOf(PaymentException.class)
+                .hasMessage("Order not found")
+                .hasCauseInstanceOf(OrderNotFoundException.class);
     }
 
     @Test
     void createPaymentThrowsExceptionIfPaymentTypeIsUnknown() {
         var orderId = 1L;
-        var request = new UnknownPaymentDto();
+        var newPayment = new UnknownPaymentDto();
         var order = new Order();
+        var createPaymentDtoRequest = new CreatePaymentDtoRequest(orderId, newPayment);
 
         when(orderRepository.findById(orderId))
                 .thenReturn(Optional.of(order));
 
-        assertThatThrownBy(() -> orderPaymentService.createPayment(orderId, request))
-                .isInstanceOf(ArgumentException.class)
+        assertThatThrownBy(() -> orderPaymentService.createPayment(createPaymentDtoRequest))
+                .isInstanceOf(PaymentUnkownTypeException.class)
                 .hasMessage("Unknown Payment Type");
     }
 
     @Test
     void createPaymentThrowsExceptionIfPaymentCouldNotBeCreated() {
         var orderId = 1L;
-        var request = CashPaymentDto.builder()
+        var newPayment = CashPaymentDto.builder()
                 .riderId(1)
                 .build();
         var order = Order.builder()
                 .payments(new HashSet<>())
                 .build();
         var rider = new Rider();
+        var createPaymentDtoRequest = new CreatePaymentDtoRequest(orderId, newPayment);
 
         when(orderRepository.findById(orderId))
                 .thenReturn(Optional.of(order));
         when(riderRepository.findById(1))
                 .thenReturn(Optional.of(rider));
-        when(orderRepository.save(order))
-                .thenAnswer(inv -> {
-                    order.getPayments().clear();
-                    return order;
-                });
+        doAnswer(inv -> {
+            order.getPayments().clear();
+            return order;
+        }).when(orderRepository).save(order);
 
-        assertThatThrownBy(() -> orderPaymentService.createPayment(orderId, request))
-                .isInstanceOf(StateException.class)
+        assertThatThrownBy(() -> orderPaymentService.createPayment(createPaymentDtoRequest))
+                .isInstanceOf(PaymentException.class)
                 .hasMessage("Payment could not be created");
     }
 
     @Test
     void createPaymentThrowsExceptionIfRiderDoesNotExist() {
         var orderId = 1L;
-        var request = CashPaymentDto.builder()
+        var newPayment = CashPaymentDto.builder()
                 .riderId(1)
                 .build();
         var order = Order.builder()
                 .payments(new HashSet<>())
                 .build();
+        var createPaymentDtoRequest = new CreatePaymentDtoRequest(orderId, newPayment);
 
         when(orderRepository.findById(orderId))
                 .thenReturn(Optional.of(order));
         when(riderRepository.findById(1))
                 .thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> orderPaymentService.createPayment(orderId, request))
-                .isInstanceOf(StateException.class)
-                .hasMessage("Rider not found");
+        assertThatThrownBy(() -> orderPaymentService.createPayment(createPaymentDtoRequest))
+                .isInstanceOf(PaymentException.class)
+                .hasMessage("Rider not found")
+                .hasCauseInstanceOf(RiderNotFoundException.class);
     }
 
     @Test
     void createPaymentThrowsExceptionIfBankAccountDoesNotExist() {
         var orderId = 1L;
-        var request = TransferencePaymentDto.builder()
+        var newPayment = TransferencePaymentDto.builder()
                 .bankAccountId(1)
                 .build();
         var order = Order.builder()
                 .payments(new HashSet<>())
                 .build();
+        var createPaymentDtoRequest = new CreatePaymentDtoRequest(orderId, newPayment);
 
         when(orderRepository.findById(orderId))
                 .thenReturn(Optional.of(order));
         when(bankAccountRepository.findById(1))
                 .thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> orderPaymentService.createPayment(orderId, request))
-                .isInstanceOf(StateException.class)
-                .hasMessage("Bank Account not found");
+        assertThatThrownBy(() -> orderPaymentService.createPayment(createPaymentDtoRequest))
+                .isInstanceOf(PaymentException.class)
+                .hasMessage("Bank Account not found")
+                .hasCauseInstanceOf(BankAccountNotFoundException.class);
     }
 
     @Test
     void createCashPayment() {
         var orderId = 1L;
-        var request = CashPaymentDto.builder()
+        var newPayment = CashPaymentDto.builder()
                 .riderId(1)
                 .amount(10D)
                 .build();
@@ -192,17 +209,16 @@ public class OrderPaymentServiceTest {
                 .thenReturn(Optional.of(order));
         when(riderRepository.findById(1))
                 .thenReturn(Optional.of(rider));
-        when(orderRepository.save(order))
-                .thenAnswer(inv -> {
-                    order.getPayments()
-                            .stream()
-                            .forEach(p -> p.setId(1L));
-                    return order;
-                });
-        when(mapper.map(any(CashPayment.class), eq(PaymentDto.class)))
+        doAnswer(inv -> {
+            order.getPayments()
+                    .stream()
+                    .forEach(p -> p.setId(1L));
+            return order;
+        }).when(orderRepository).save(order);
+        when(services.map(any(CashPayment.class), eq(PaymentDto.class)))
                 .thenReturn(paymentDto);
 
-        assertThat(orderPaymentService.createPayment(orderId, request))
+        assertThat(orderPaymentService.createPayment(new CreatePaymentDtoRequest(orderId, newPayment)))
                 .isSameAs(paymentDto);
         verify(orderRepository).save(order);
         assertThat(order.getPayments())
@@ -219,7 +235,7 @@ public class OrderPaymentServiceTest {
     @Test
     void createTransferencePayment() {
         var orderId = 1L;
-        var request = TransferencePaymentDto.builder()
+        var newPayment = TransferencePaymentDto.builder()
                 .bankAccountId(1)
                 .amount(10D)
                 .build();
@@ -233,17 +249,16 @@ public class OrderPaymentServiceTest {
                 .thenReturn(Optional.of(order));
         when(bankAccountRepository.findById(1))
                 .thenReturn(Optional.of(bank));
-        when(orderRepository.save(order))
-                .thenAnswer(inv -> {
-                    order.getPayments()
-                            .stream()
-                            .forEach(p -> p.setId(1L));
-                    return order;
-                });
-        when(mapper.map(any(TransferencePayment.class), eq(PaymentDto.class)))
+        doAnswer(inv -> {
+            order.getPayments()
+                    .stream()
+                    .forEach(p -> p.setId(1L));
+            return order;
+        }).when(orderRepository).save(order);
+        when(services.map(any(TransferencePayment.class), eq(PaymentDto.class)))
                 .thenReturn(paymentDto);
 
-        assertThat(orderPaymentService.createPayment(orderId, request))
+        assertThat(orderPaymentService.createPayment(new CreatePaymentDtoRequest(orderId, newPayment)))
                 .isSameAs(paymentDto);
         verify(orderRepository).save(order);
         assertThat(order.getPayments())
@@ -263,36 +278,39 @@ public class OrderPaymentServiceTest {
     void updatePaymentThrowsExceptionIfOrderDoesNotExist() {
         var orderId = 1L;
         var paymentId = 1L;
-        var request = CashPaymentDto.builder()
+        var newPayment = CashPaymentDto.builder()
                 .riderId(1)
                 .amount(10D)
                 .build();
+        var updatePaymentDtoRequest = new UpdatePaymentDtoRequest(paymentId, orderId, newPayment);
 
         when(orderRepository.findById(orderId))
                 .thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> orderPaymentService.updatePayment(orderId, paymentId, request))
-                .isInstanceOf(StateException.class)
-                .hasMessage("Order not found");
+        assertThatThrownBy(() -> orderPaymentService.updatePayment(updatePaymentDtoRequest))
+                .isInstanceOf(PaymentException.class)
+                .hasMessage("Order not found")
+                .hasCauseInstanceOf(OrderNotFoundException.class);
     }
 
     @Test
     void updatePaymentThrowsExceptionIfPaymentDoesNotExist() {
         var orderId = 1L;
         var paymentId = 1L;
-        var request = CashPaymentDto.builder()
+        var newPayment = CashPaymentDto.builder()
                 .riderId(1)
                 .amount(10D)
                 .build();
         var order = Order.builder()
                 .payments(new HashSet<>())
                 .build();
+        var updatePaymentDtoRequest = new UpdatePaymentDtoRequest(paymentId, orderId, newPayment);
 
         when(orderRepository.findById(orderId))
                 .thenReturn(Optional.of(order));
 
-        assertThatThrownBy(() -> orderPaymentService.updatePayment(orderId, paymentId, request))
-                .isInstanceOf(StateException.class)
+        assertThatThrownBy(() -> orderPaymentService.updatePayment(updatePaymentDtoRequest))
+                .isInstanceOf(PaymentNotFoundException.class)
                 .hasMessage("Payment not found");
     }
 
@@ -300,16 +318,17 @@ public class OrderPaymentServiceTest {
     void updatePaymentThrowsExceptionIfPaymentTypeIsUnknown() {
         var orderId = 1L;
         var paymentId = 1L;
-        var request = new UnknownPaymentDto();
+        var newPayment = new UnknownPaymentDto();
         var order = Order.builder()
                 .payments(Set.of(CashPayment.builder().id(paymentId).build()))
                 .build();
+        var updatePaymentDtoRequest = new UpdatePaymentDtoRequest(paymentId, orderId, newPayment);
 
         when(orderRepository.findById(orderId))
                 .thenReturn(Optional.of(order));
 
-        assertThatThrownBy(() -> orderPaymentService.updatePayment(orderId, paymentId, request))
-                .isInstanceOf(ArgumentException.class)
+        assertThatThrownBy(() -> orderPaymentService.updatePayment(updatePaymentDtoRequest))
+                .isInstanceOf(PaymentUnkownTypeException.class)
                 .hasMessage("Unknown Payment Type");
     }
 
@@ -317,16 +336,17 @@ public class OrderPaymentServiceTest {
     void updatePaymentThrowsExceptionIfCashPaymentTypeChanges() {
         var orderId = 1L;
         var paymentId = 1L;
-        var request = new TransferencePaymentDto();
+        var newPayment = new TransferencePaymentDto();
         var order = Order.builder()
                 .payments(Set.of(CashPayment.builder().id(paymentId).build()))
                 .build();
+        var updatePaymentDtoRequest = new UpdatePaymentDtoRequest(paymentId, orderId, newPayment);
 
         when(orderRepository.findById(orderId))
                 .thenReturn(Optional.of(order));
 
-        assertThatThrownBy(() -> orderPaymentService.updatePayment(orderId, paymentId, request))
-                .isInstanceOf(StateException.class)
+        assertThatThrownBy(() -> orderPaymentService.updatePayment(updatePaymentDtoRequest))
+                .isInstanceOf(PaymentTypeChangedException.class)
                 .hasMessage("Payment Type can not be changed");
     }
 
@@ -334,16 +354,17 @@ public class OrderPaymentServiceTest {
     void updatePaymentThrowsExceptionIfTransferencePaymentTypeChanges() {
         var orderId = 1L;
         var paymentId = 1L;
-        var request = new CashPaymentDto();
+        var newPayment = new CashPaymentDto();
         var order = Order.builder()
                 .payments(Set.of(TransferencePayment.builder().id(paymentId).build()))
                 .build();
+        var updatePaymentDtoRequest =new UpdatePaymentDtoRequest(paymentId, orderId, newPayment);
 
         when(orderRepository.findById(orderId))
                 .thenReturn(Optional.of(order));
 
-        assertThatThrownBy(() -> orderPaymentService.updatePayment(orderId, paymentId, request))
-                .isInstanceOf(StateException.class)
+        assertThatThrownBy(() -> orderPaymentService.updatePayment(updatePaymentDtoRequest))
+                .isInstanceOf(PaymentTypeChangedException.class)
                 .hasMessage("Payment Type can not be changed");
     }
 
@@ -351,7 +372,7 @@ public class OrderPaymentServiceTest {
     void updatePaymentCashPayment() {
         var orderId = 1L;
         var paymentId = 1L;
-        var request = CashPaymentDto.builder()
+        var newPayment = CashPaymentDto.builder()
                 .riderId(1)
                 .amount(10D)
                 .build();
@@ -371,10 +392,10 @@ public class OrderPaymentServiceTest {
                 .thenReturn(Optional.of(order));
         when(riderRepository.findById(1))
                 .thenReturn(Optional.of(rider));
-        when(mapper.map(any(CashPayment.class), eq(PaymentDto.class)))
+        when(services.map(any(CashPayment.class), eq(PaymentDto.class)))
                 .thenReturn(paymentDto);
 
-        assertThat(orderPaymentService.updatePayment(orderId, paymentId, request))
+        assertThat(orderPaymentService.updatePayment(new UpdatePaymentDtoRequest(paymentId, orderId, newPayment)))
                 .isSameAs(paymentDto);
         verify(orderRepository).save(order);
         assertThat(cashPayment)
@@ -390,7 +411,7 @@ public class OrderPaymentServiceTest {
     void updatePaymentTransferencePayment() {
         var orderId = 1L;
         var paymentId = 1L;
-        var request = TransferencePaymentDto.builder()
+        var newPayment = TransferencePaymentDto.builder()
                 .bankAccountId(1)
                 .amount(10D)
                 .build();
@@ -410,10 +431,10 @@ public class OrderPaymentServiceTest {
                 .thenReturn(Optional.of(order));
         when(bankAccountRepository.findById(1))
                 .thenReturn(Optional.of(bank));
-        when(mapper.map(any(TransferencePayment.class), eq(PaymentDto.class)))
+        when(services.map(any(TransferencePayment.class), eq(PaymentDto.class)))
                 .thenReturn(paymentDto);
 
-        assertThat(orderPaymentService.updatePayment(orderId, paymentId, request))
+        assertThat(orderPaymentService.updatePayment(new UpdatePaymentDtoRequest(paymentId, orderId, newPayment)))
                 .isSameAs(paymentDto);
         verify(orderRepository).save(order);
         assertThat(cashPayment)

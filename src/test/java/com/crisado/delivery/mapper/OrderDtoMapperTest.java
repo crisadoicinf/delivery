@@ -19,12 +19,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 
 @ExtendWith(MockitoExtension.class)
-public class OrderDtoMapperTest {
+class OrderDtoMapperTest {
 
     private final ModelMapper mapper = new MapperConfig().getModelMapper();
 
     @Test
-    public void mapOrder() {
+    void mapOrder() {
         var deliveryDate = ZonedDateTime.now();
         var product1 = Product.builder()
                 .id(1)

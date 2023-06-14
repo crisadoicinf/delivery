@@ -12,13 +12,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 
 @ExtendWith(MockitoExtension.class)
-public class TransferenceDtoMapperTest {
+class TransferenceDtoMapperTest {
 
     private final ModelMapper mapper = new MapperConfig().getModelMapper();
 
 
     @Test
-    public void mapTransferencePayment() {
+    void mapTransferencePayment() {
         var date = ZonedDateTime.now();
         var transferencePayment = TransferencePayment.builder()
                 .id(1L)

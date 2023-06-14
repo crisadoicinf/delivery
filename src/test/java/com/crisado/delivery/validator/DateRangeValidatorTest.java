@@ -7,12 +7,12 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class DateRangeValidatorTest {
+class DateRangeValidatorTest {
 
     private final DateRangeValidator validator = new DateRangeValidator();
 
     @Test
-    public void isValidIfToIsAfterFrom() {
+    void isValidIfToIsAfterFrom() {
         DateRangeDto dateRangeDto = new DateRangeDto(
                 ZonedDateTime.parse("2023-06-01T00:00:00Z"),
                 ZonedDateTime.parse("2023-06-05T00:00:00Z")
@@ -23,7 +23,7 @@ public class DateRangeValidatorTest {
     }
 
     @Test
-    public void isValidIfDateRangeIsNull() {
+    void isValidIfDateRangeIsNull() {
         DateRangeDto dateRangeDto = null;
         ConstraintValidatorContext ctx = null;
 
@@ -32,7 +32,7 @@ public class DateRangeValidatorTest {
     }
 
     @Test
-    public void isValidIsFromIsNull() {
+    void isValidIsFromIsNull() {
         DateRangeDto dateRangeDto = new DateRangeDto(
                 null,
                 ZonedDateTime.parse("2023-06-05T00:00:00Z")
@@ -43,7 +43,7 @@ public class DateRangeValidatorTest {
     }
 
     @Test
-    public void isValidIfToIsNull() {
+    void isValidIfToIsNull() {
         DateRangeDto dateRangeDto = new DateRangeDto(
                 ZonedDateTime.parse("2023-06-01T00:00:00Z"),
                 null
@@ -55,7 +55,7 @@ public class DateRangeValidatorTest {
     }
 
     @Test
-    public void isInValidToIsNotAfterFrom() {
+    void isInValidToIsNotAfterFrom() {
         DateRangeDto dateRangeDto = new DateRangeDto(
                 ZonedDateTime.parse("2023-06-05T00:00:00Z"),
                 ZonedDateTime.parse("2023-06-01T00:00:00Z")

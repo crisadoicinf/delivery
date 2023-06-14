@@ -17,12 +17,12 @@ import org.modelmapper.ModelMapper;
 import org.assertj.core.api.InstanceOfAssertFactories;
 
 @ExtendWith(MockitoExtension.class)
-public class PaymentDtoMapperTest {
+class PaymentDtoMapperTest {
 
     private final ModelMapper mapper = new MapperConfig().getModelMapper();
 
     @Test
-    public void mapCashPayment() {
+    void mapCashPayment() {
         var date = ZonedDateTime.now();
         var cashPayment = CashPayment.builder()
                 .id(1L)
@@ -53,7 +53,7 @@ public class PaymentDtoMapperTest {
     }
 
     @Test
-    public void mapTransferencePayment() {
+    void mapTransferencePayment() {
         var date = ZonedDateTime.now();
         var transferencePayment = TransferencePayment.builder()
                 .id(1L)

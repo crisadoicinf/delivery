@@ -1,5 +1,7 @@
 package com.crisado.delivery.service;
 
+import com.crisado.delivery.dto.DeliveryOrderSummariesDtoRequest;
+import com.crisado.delivery.dto.OrderDeliveredDtoRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -17,11 +19,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.modelmapper.ModelMapper;
 
 import com.crisado.delivery.dto.OrderSummaryDto;
 import com.crisado.delivery.dto.RiderDto;
-import com.crisado.delivery.exception.StateException;
+import com.crisado.delivery.exception.OrderDeliveryException;
+import com.crisado.delivery.exception.OrderNotFoundException;
 import com.crisado.delivery.model.Order;
 import com.crisado.delivery.model.OrderDelivery;
 import com.crisado.delivery.model.Rider;
@@ -30,7 +32,7 @@ import com.crisado.delivery.repository.OrderRepository;
 import com.crisado.delivery.repository.RiderRepository;
 
 @ExtendWith(MockitoExtension.class)
-public class OrderDeliveryServiceTest {
+class OrderDeliveryServiceTest {
 
     @Mock
     private OrderRepository orderRepository;
@@ -39,37 +41,39 @@ public class OrderDeliveryServiceTest {
     @Mock
     private RiderRepository riderRepository;
     @Mock
-    private ModelMapper mapper;
+    private Services services;
     @InjectMocks
     private OrderDeliveryService service;
 
     @Test
-    void getOrders() {
+    void getOrderSummaries() {
         var date = ZonedDateTime.now();
         var riderId = 1;
         var orders = List.of(new Order(), new Order());
         var orderDto1 = new OrderSummaryDto();
         var orderDto2 = new OrderSummaryDto();
 
-        when(orderRepository.findAllByDeliveryDateAndRiderIdOrNull(date, date.plusDays(1), riderId))
+        when(orderRepository.findAllByDeliveryDateBetweenAndOptionalRiderId(date, date.plusDays(1), riderId))
                 .thenReturn(orders);
-        when(mapper.map(any(Order.class), eq(OrderSummaryDto.class)))
+        when(services.map(any(Order.class), eq(OrderSummaryDto.class)))
                 .thenReturn(orderDto1, orderDto2);
 
-        assertThat(service.getOrders(date, riderId))
+        assertThat(service.getOrderSummaries(new DeliveryOrderSummariesDtoRequest(date, riderId)))
                 .containsExactlyInAnyOrder(orderDto1, orderDto2);
     }
 
     @Test
     void setOrderDeliveredThrowsExceptionIfOrderNotFound() {
         var orderId = 1L;
+        var orderDeliveredDtoRequest = new OrderDeliveredDtoRequest(orderId, true);
 
         when(orderRepository.findById(orderId))
                 .thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.setOrderDelivered(orderId, true))
-                .isInstanceOf(StateException.class)
-                .hasMessage("Order not found");
+        assertThatThrownBy(() -> service.setOrderDelivered(orderDeliveredDtoRequest))
+                .isInstanceOf(OrderDeliveryException.class)
+                .hasMessage("Order not found")
+                .hasCauseInstanceOf(OrderNotFoundException.class);
     }
 
     @Test
@@ -84,7 +88,7 @@ public class OrderDeliveryServiceTest {
         when(orderRepository.findById(orderId))
                 .thenReturn(Optional.of(order));
 
-        service.setOrderDelivered(orderId, true);
+        service.setOrderDelivered(new OrderDeliveredDtoRequest(orderId, true));
 
         verify(deliveryRepository, times(1))
                 .save(order.getDelivery());
@@ -100,7 +104,7 @@ public class OrderDeliveryServiceTest {
 
         when(riderRepository.findAll())
                 .thenReturn(rider);
-        when(mapper.map(any(Rider.class), eq(RiderDto.class)))
+        when(services.map(any(Rider.class), eq(RiderDto.class)))
                 .thenReturn(riderDto1, riderDto2);
 
         assertThat(service.getRiders())

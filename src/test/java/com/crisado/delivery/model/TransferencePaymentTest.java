@@ -3,10 +3,10 @@ package com.crisado.delivery.model;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 
-public class TransferencePaymentTest {
+class TransferencePaymentTest {
     
     @Test
-    public void getRecipientNameWhenBankAccountIsNull() {
+    void getRecipientNameWhenBankAccountIsNull() {
         var payment = new TransferencePayment();
 
         assertThat(payment.getRecipientName())
@@ -14,7 +14,7 @@ public class TransferencePaymentTest {
     }
 
     @Test
-    public void getRecipientName() {
+    void getRecipientName() {
         var payment = TransferencePayment.builder()
                 .bankAccount(BankAccount.builder()
                         .owner("owner1")
@@ -27,7 +27,7 @@ public class TransferencePaymentTest {
     }
 
     @Test
-    public void getRecipientTypeWhenBankAccountIsNull() {
+    void getRecipientTypeWhenBankAccountIsNull() {
         var payment = new TransferencePayment();
 
         assertThat(payment.getRecipientType())
@@ -35,7 +35,7 @@ public class TransferencePaymentTest {
     }
 
     @Test
-    public void getRecipientType() {
+    void getRecipientType() {
         var payment = TransferencePayment.builder()
                 .bankAccount(BankAccount.builder()
                         .owner("owner1")

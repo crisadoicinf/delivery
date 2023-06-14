@@ -12,12 +12,12 @@ import org.modelmapper.ModelMapper;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
-public class CashPaymentDtoMapperTest {
+class CashPaymentDtoMapperTest {
 
     private final ModelMapper mapper = new MapperConfig().getModelMapper();
 
     @Test
-    public void mapCashPayment() {
+    void mapCashPayment() {
         var date = ZonedDateTime.now();
         var cashPayment = CashPayment.builder()
                 .id(1L)

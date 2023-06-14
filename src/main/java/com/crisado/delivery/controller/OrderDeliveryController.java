@@ -1,6 +1,7 @@
 package com.crisado.delivery.controller;
 
-import java.time.ZonedDateTime;
+import com.crisado.delivery.dto.DeliveryOrderSummariesDtoRequest;
+import com.crisado.delivery.dto.OrderDeliveredDtoRequest;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
@@ -16,23 +17,28 @@ import com.crisado.delivery.dto.RiderDto;
 import com.crisado.delivery.service.OrderDeliveryService;
 
 import lombok.AllArgsConstructor;
+import org.springframework.web.bind.annotation.ModelAttribute;
 
 @AllArgsConstructor
 @RestController
 @RequestMapping("/api/delivery")
-public class DeliveryController {
+public class OrderDeliveryController {
 
     private final OrderDeliveryService deliveryService;
 
     @GetMapping("/orders")
-    public ResponseEntity<List<OrderSummaryDto>> getOrders(@RequestParam ZonedDateTime date, @RequestParam int riderId) {
-        var orders = deliveryService.getOrders(date, riderId);
+    public ResponseEntity<List<OrderSummaryDto>> getOrderSummaries(@ModelAttribute DeliveryOrderSummariesDtoRequest request) {
+        var orders = deliveryService.getOrderSummaries(request);
         return ResponseEntity.ok(orders);
     }
 
     @PutMapping("/orders/{orderId}")
     public ResponseEntity<Void> setOrderDelivered(@PathVariable long orderId, @RequestParam boolean delivered) {
-    	deliveryService.setOrderDelivered(orderId, delivered);
+        var request = OrderDeliveredDtoRequest.builder()
+                .orderId(orderId)
+                .delivered(delivered)
+                .build();
+        deliveryService.setOrderDelivered(request);
         return ResponseEntity.noContent().build();
     }
 
